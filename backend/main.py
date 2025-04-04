@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.gzip import GZipMiddleware
 
+from backend.api.coworking import students
 from backend.services.coworking.reservation import ReservationException
 
 from .api.events import events
@@ -105,6 +106,7 @@ feature_apis = [
     article,
     signage,
     websocket,
+    students,
 ]
 
 for feature_api in feature_apis:
