@@ -36,11 +36,14 @@ class ActiveUserService:
             focus=user,
             state=ReservationState.CHECKED_IN,  # only want if checked in (ex no unfulfilled reservations)
         )
+        # Use colons instead of commas because it's a dictionary ????
         if len(reservations) > 0:
-            return {user, reservations[0]._seat_svc}
+            return {user: reservations[0]._seat_svc}
         else:
-            return {User, None}
+            return {User: None}
 
+    """
+    # Removing for the below purpose - will come back to this if needed, so don't want to delete in case
     # TODO i feel less confident in this implementation but if we do it right it could be more efficient? idk.
     def check_if_active_by_pid2(self, pid: int) -> dict[User, str]:
         user: User = self._user_service.get(pid)  # get the user by pid
@@ -63,6 +66,7 @@ class ActiveUserService:
             return {user, reservations[0]._seat_svc}
         else:
             return {user, None}
+            """
 
     # TODO not sure how to handle response
     def check_if_active_by_string(self, name: str) -> dict[User, str]:
@@ -72,7 +76,7 @@ class ActiveUserService:
             self, name
         )  # returns list of users matching params
 
-        # TODO use ai here to determine ?
+        # TODO use ai here to determine which is which?
 
         now = datetime.now()
 
@@ -92,7 +96,7 @@ class ActiveUserService:
             )
 
         # return reservations # currently returns list of reservations that are active and matching
-        response: dict[User, str] = []
+        response: dict[User, str] = {}
         for reservation in reservations:
             response[reservation._user] = {reservation[0]._seat_svc}
         return response
@@ -119,7 +123,7 @@ class ActiveUserService:
         for classmate in roster:
             if self.check_if_active_by_pid1(classmate.pid):
                 active_classmates.append(classmate)
-
+        # Will this return all user info? Do we need to put in this service layer method?
         return active_classmates
 
 
