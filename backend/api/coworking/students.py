@@ -3,6 +3,7 @@ from typing import Sequence
 from datetime import datetime
 
 from backend.models.user_details import UserDetails
+from backend.services.coworking.students import ActiveUserService
 
 
 __authors__ = ["Emma Coye, Manasi Chaudhary, Caroline Bryan, Kathryn Brown"]
@@ -15,9 +16,9 @@ api = APIRouter(prefix="/api/coworking")
 
 
 @api.get(
-    "/students/{pid}",  # TODO: double check pid vs onyen
+    "/students/{field}",  # TODO: search by more general terms
     summary="Get active specified user",
-    description=" Checking whether a specifed user is active and visible in the XL. ",
+    description=" Checking whether a specifed user is active and visible in the XL. Finding user by PID, onyen, email, or name.",
     responses={
         200: {
             "description": "User returned!",
@@ -30,18 +31,18 @@ api = APIRouter(prefix="/api/coworking")
         },
     },
     tags=["Coworking"],
-)  # TODO add in response model, fix response codes
-def check_user_activity(pid: int) -> bool:  # appearing in /docs yay! # TODO
+)
+def check_user_activity(field: str | int) -> bool:  # appearing in /docs yay! # TODO
     try:
-        # existing method to get a user's active reservations: _get_active_reservations_for_user()
-        return True  # call service here
+        return ActiveUserService.check_if_active(field)
+    # TODO maybe this is where we call ai to format and look pretty? idk
     except:
         raise HTTPException(status_code=404, detail="No active user could be found.")
 
 
 # Route based on course
 @api.get(
-    "/student?course={course_id}",
+    "/student?course={course_input}",
     summary="Get active users in a specified course.",
     description=" TODO ",
     responses={
@@ -58,18 +59,19 @@ def check_user_activity(pid: int) -> bool:  # appearing in /docs yay! # TODO
     tags=["Coworking"],
 )
 def get_active_classmates(
-    course_id: str,
+    course_input: str,
 ) -> list[UserDetails]:  # TODO check course_id right way to access?
     try:
-        # course_id is input, route for
-        # todo create fake data to test with
-        return []  # call service here
+        return ActiveUserService.get_active_classmates(
+            course_input
+        )  # search by general info (course, section, etc)
     except:
         raise HTTPException(
             status_code=404, detail="No active classmates could be found."
         )
 
-
+# not relevant to goal of user story so removing for now
+"""
 @api.get(
     "/students/active",
     summary="Get all active users in CSXL",
@@ -95,3 +97,5 @@ def get_active_users() -> list[UserDetails]:  # TODO
 
     except:
         raise HTTPException(status_code=404, detail="No active users could be found")
+
+"""
