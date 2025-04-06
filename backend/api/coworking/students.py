@@ -16,7 +16,7 @@ api = APIRouter(prefix="/api/coworking")
 
 
 @api.get(
-    "/students/{field}",  # TODO: search by more general terms
+    "/students/{field}",
     summary="Get active specified user",
     description=" Checking whether a specifed user is active and visible in the XL. Finding user by PID, onyen, email, or name.",
     responses={
@@ -32,10 +32,9 @@ api = APIRouter(prefix="/api/coworking")
     },
     tags=["Coworking"],
 )
-def check_user_activity(field: str | int) -> bool:  # appearing in /docs yay! # TODO
+def check_user_activity(field: str | int) -> bool:
     try:
         return ActiveUserService.check_if_active(field)
-    # TODO maybe this is where we call ai to format and look pretty? idk
     except:
         raise HTTPException(status_code=404, detail="No active user could be found.")
 
@@ -60,15 +59,14 @@ def check_user_activity(field: str | int) -> bool:  # appearing in /docs yay! # 
 )
 def get_active_classmates(
     course_input: str,
-) -> list[UserDetails]:  # TODO check course_id right way to access?
+) -> list[UserDetails]:
     try:
-        return ActiveUserService.get_active_classmates(
-            course_input
-        )  # search by general info (course, section, etc)
+        return ActiveUserService.get_active_classmates(course_input)
     except:
         raise HTTPException(
             status_code=404, detail="No active classmates could be found."
         )
+
 
 # not relevant to goal of user story so removing for now
 """
