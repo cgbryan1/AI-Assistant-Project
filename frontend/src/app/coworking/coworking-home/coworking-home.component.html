@@ -1,59 +1,123 @@
 <!-- eslint-disable prettier/prettier -->
-@if (status()) {
-  @if (openOperatingHours()) {
-    <mat-pane>
-      <coworking-operating-hours-panel
-      [operatingHours]="status().operating_hours"
-      [openOperatingHours]="openOperatingHours()" />
-    </mat-pane>
-    
-  } @else {
-    <mat-pane>
-      <coworking-operating-hours-panel [operatingHours]="status().operating_hours" />
-    </mat-pane>
-  }
-  
-  @if (activeReservation()) {
-    <coworking-reservation-card
-      (reloadCoworkingHome)="ngOnInit()"
-      [reservation]="activeReservation()!"></coworking-reservation-card>
-  } @else {
-    <coworking-dropin-availability-card
-      [seat_availability]="status().seat_availability"
-      (seatsSelected)="reserve($event)" />
-  }
 
-  <mat-pane>
-    <div class="reserve-room-content">
-      <div class="reserve-room-text">
-        <mat-card-title>Reserve a Room</mat-card-title>
-        <p>Reserve a room in the XL hallway!</p>
-      </div>
-      <button
-        id="new-room-reservation-button"
-        mat-stroked-button
-        type="submit"
-        (click)="navigateToNewReservation()"
-        color="primary">
-        View
-      </button>
-    </div>
-  </mat-pane>
-}
+<div id="coworking">
 
-@if (upcomingReservations().length > 0) {
-  <mat-pane>
-    <mat-card-header>
-      <mat-card-title>Upcoming Room Reservations</mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      @for (reservation of upcomingReservations(); track reservation) {
+<div id="main">
+  <!-- mainpage - not changed -->
+    @if (status()) {
+      @if (openOperatingHours()) {
+        <mat-pane>
+          <coworking-operating-hours-panel
+          [operatingHours]="status().operating_hours"
+          [openOperatingHours]="openOperatingHours()" />
+        </mat-pane>
+        
+      } @else {
+        <mat-pane>
+          <coworking-operating-hours-panel [operatingHours]="status().operating_hours" />
+        </mat-pane>
+      }
+      
+      @if (activeReservation()) {
         <coworking-reservation-card
-          [reservation]="reservation"
-          [isPane]="false"
-          (reloadCoworkingHome)="ngOnInit()">
-        </coworking-reservation-card>
-      }  
-    </mat-card-content>
-  </mat-pane>
-}
+          (reloadCoworkingHome)="ngOnInit()"
+          [reservation]="activeReservation()!"></coworking-reservation-card>
+      } @else {
+        <coworking-dropin-availability-card
+          [seat_availability]="status().seat_availability"
+          (seatsSelected)="reserve($event)" />
+      }
+    
+      <mat-pane>
+        <div class="reserve-room-content">
+          <div class="reserve-room-text">
+            <mat-card-title>Reserve a Room</mat-card-title>
+            <p>Reserve a room in the XL hallway!</p>
+          </div>
+          <button
+            id="new-room-reservation-button"
+            mat-stroked-button
+            type="submit"
+            (click)="navigateToNewReservation()"
+            color="primary">
+            View
+          </button>
+        </div>
+      </mat-pane>
+    }
+    
+    @if (upcomingReservations().length > 0) {
+      <mat-pane>
+        <mat-card-header>
+          <mat-card-title>Upcoming Room Reservations</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          @for (reservation of upcomingReservations(); track reservation) {
+            <coworking-reservation-card
+              [reservation]="reservation"
+              [isPane]="false"
+              (reloadCoworkingHome)="ngOnInit()">
+            </coworking-reservation-card>
+          }  
+        </mat-card-content>
+      </mat-pane>
+    }
+</div>
+
+<div id="add-ons">
+<!-- Not at ALL implemented, not linked to anything, just a fun little switch for now -->
+<mat-pane>
+  <div id="ghost-toggle">
+    <h2>Ghost Mode</h2>
+    <p><mat-slide-toggle></mat-slide-toggle></p>
+  </div>
+</mat-pane>
+
+<!-- ChatBot -->
+<mat-pane appearance="outlined">
+  <!-- header -->
+  <mat-card-header>
+
+    <!-- <mat-card-title>Chat with ConnectXL</mat-card-title>
+    <button mat-stroked-button>i</button> -->
+
+    <mat-expansion-panel hideToggle>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Chat with ConnectXL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <mat-icon matListItemIcon>info</mat-icon></mat-panel-title>
+        <!-- &nbsp; preserves whitespace -->
+      </mat-expansion-panel-header>
+      <h3>ConnectXL is an AI helper to assist with all of your coworking needs!</h3>
+      <p>Need some conversation starters?</p>
+      <p><i>make me a room reservation 2pm-3pm for 2 people</i></p>
+      <p><i>cancel my 2pm room reservation</i></p>
+      <p><i>are any of my classmates in the XL?</i></p>
+      <p><i>is Kris Jordan in the XL?</i></p>
+    </mat-expansion-panel>
+
+  </mat-card-header>
+
+  <mat-card-content>
+    <!-- box for messages -->
+    <cdk-virtual-scroll-viewport itemSize="50" class="message-box"> 
+      <!-- documentation @ https://material.angular.io/cdk/scrolling/overview -->
+      <div *cdkVirtualFor="let message of messageCache()">
+        @if (message.type === 'UserMessage') { <!-- styled diff in block based on source -->
+          <div class="user-message">{{message.content}}</div>
+        } @else { <!-- implicitly message.type=aiMessage -->
+          <div class="ai-message">{{message.content}}</div>
+        }
+      </div>
+    </cdk-virtual-scroll-viewport>
+
+    <!-- text input -->
+    <mat-form-field appearance="outline" class="text-input">
+      <input matInput placeholder="Start typing here..." [formControl]="chatInput" (keydown.enter)="onChatInput()">
+    </mat-form-field>
+    
+    <!--<button mat-stroked-button (click)="onChatInput()" [disabled]="!chat"><mat-icon matListItemIcon>arrow_forward</mat-icon></button>-->
+
+  </mat-card-content>
+</mat-pane>
+</div>
+
+</div>

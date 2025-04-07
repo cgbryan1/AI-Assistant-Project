@@ -180,3 +180,15 @@ export interface ReservationMapDetails {
   operating_hours_end: string;
   number_of_time_slots: number;
 }
+
+// new frontend models
+
+export enum MessageType {
+  UserMessage = 'UserMessage',
+  AIMessage = 'AIMessage'
+}
+
+export interface Message {
+  type: MessageType;
+  content: string;
+}

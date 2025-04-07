@@ -33,6 +33,8 @@ import { AmbassadorRoomComponent } from './ambassador-home/ambassador-room/ambas
 import { ReservationFactsWidget } from './widgets/reservation-facts/reservation-facts.widget';
 import { DialogModule } from '@angular/cdk/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @NgModule({
   declarations: [
@@ -53,6 +55,9 @@ import { MatDialogModule } from '@angular/material/dialog';
   ],
   imports: [
     CommonModule,
+    ScrollingModule,
+    ReactiveFormsModule,
+    MatSlideToggleModule,
     MatCardModule,
     MatButtonModule,
     MatDividerModule,
