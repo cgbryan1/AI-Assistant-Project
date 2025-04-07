@@ -82,6 +82,44 @@ class ActiveUserService:
         # TODO need get active users helper method
         return None
 
+    def get_all_active_users(self, subject: User) -> dict[User, str]:
+        # Helper method for getting all active users (need ambassador permissions)
+        # takes in the user making the request to make sure appropriate permissions are granted
+        # Return as input to AI for parsing a dictionary of active users and returning based on required details
+
+        # Collect all reservations (upcoming and active using ReservationService helper methods)
+        # TODO implement ghost mode; we will exclude any students who can be on this list but activated ghost mode
+        xl_reservations = self.reservation_service.list_all_active_and_upcoming_for_xl(
+            subject
+        )
+        room_reservations = (
+            self.reservation_service.list_all_active_and_upcoming_for_rooms(subject)
+        )
+        active_users = {}  # Store User object and location
+
+        # process XL reservations
+        for reservation in xl_reservations:
+            if reservation.state == ReservationState.CHECKED_IN:
+                for user in reservation.users:
+                    # Get seat loc
+                    if reservation.seats and len(reservation.seats) > 0:
+                        seat_location = reservation.seats[
+                            0
+                        ].location  # Assuming first seat is relevant
+
+                        # Use title isntead of id for a more descriptive name for user output
+                        active_users[user] = {seat_location.title}
+
+        # process room reservations
+        for reservation in room_reservations:
+            if reservation.state == ReservationState.CHECKED_IN:
+                for user in reservation.users:
+                    # Get room loc
+                    room_id = reservation.room.id
+                    active_users[user] = f"{room_id}"
+
+        return active_users
+
 
 # -------------------------------- Code Graveyard
 
