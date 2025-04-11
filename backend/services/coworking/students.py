@@ -8,7 +8,7 @@ from backend.models.office_hours.course_site import CourseSite
 from backend.models.user import User
 from backend.models.user_details import UserDetails
 from ..user import UserService
-from reservation import ReservationService
+from backend.services.coworking.reservation import ReservationService
 from backend.services.academics.course_site import CourseSiteService
 from backend.services.academics import SectionService
 
