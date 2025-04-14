@@ -26,7 +26,7 @@ __license__ = "MIT"
 
 class ActiveUserService:
     _user: UserService
-    reservation_service: ReservationService
+    _reservation_svc: ReservationService
     course_site_service: CourseSiteService
     section_service: SectionService
 
@@ -34,16 +34,17 @@ class ActiveUserService:
         self,
         openai_svc: Annotated[OpenAIService, Depends()],
         user_service: UserService = Depends(),
+        reservation_service: ReservationService = Depends(),
     ):
         """Initialize the User Service."""
-        self._user = user_service
-        self.reservation_service: ReservationService = Depends()
+        self._user_svc = user_service
+        self._reservation_svc = reservation_service
         self._openai_svc = openai_svc
 
     def check_if_active_by_pid(self, pid: int) -> dict[User, str]:
-        user: User = self._user_service.get(pid)
+        user: User = self._user_svc.get(pid)
 
-        reservations = self._reservation_service.get_current_reservations_for_user(
+        reservations = self._reservation_svc.get_current_reservations_for_user(
             subject=user,
             focus=user,
             state=ReservationState.CHECKED_IN,
@@ -190,11 +191,11 @@ class ActiveUserService:
 
         # Collect all reservations (upcoming and active using ReservationService helper methods)
         # TODO for future story: implement ghost mode; we will exclude any students who can be on this list but activated ghost mode
-        xl_reservations = self.reservation_service.list_all_active_and_upcoming_for_xl(
+        xl_reservations = self._reservation_svc.list_all_active_and_upcoming_for_xl(
             subject
         )
         room_reservations = (
-            self.reservation_service.list_all_active_and_upcoming_for_rooms(subject)
+            self._reservation_svc.list_all_active_and_upcoming_for_rooms(subject)
         )
         active_users = {}  # Store User object and location
 
@@ -221,6 +222,8 @@ class ActiveUserService:
 
         return active_users
 
+
+"""
     def get_all_active_users(self, subject: User) -> dict[User, str]:
         # Helper method for getting all active users (need ambassador permissions)
         # takes in the user making the request to make sure appropriate permissions are granted
@@ -228,11 +231,11 @@ class ActiveUserService:
 
         # Collect all reservations (upcoming and active using ReservationService helper methods)
         # TODO implement ghost mode; we will exclude any students who can be on this list but activated ghost mode
-        xl_reservations = self.reservation_service.list_all_active_and_upcoming_for_xl(
+        xl_reservations = self._reservation_svc.list_all_active_and_upcoming_for_xl(
             subject
         )
         room_reservations = (
-            self.reservation_service.list_all_active_and_upcoming_for_rooms(subject)
+            self._reservation_svc.list_all_active_and_upcoming_for_rooms(subject)
         )
         active_users = {}  # Store User object and location
 
@@ -258,6 +261,7 @@ class ActiveUserService:
                     active_users[user] = f"{room_id}"
 
         return active_users
+"""  # could not tell you why I had two here
 
 
 # -------------------------------- Code Graveyard
@@ -266,18 +270,18 @@ class ActiveUserService:
     # Removing for the below purpose - will come back to this if needed, so don't want to delete in case
     # TODO i feel less confident in this implementation but if we do it right it could be more efficient? idk.
     def check_if_active_by_pid2(self, pid: int) -> dict[User, str]:
-        user: User = self._user_service.get(pid)  # get the user by pid
+        user: User = self._user_svc.get(pid)  # get the user by pid
         now = datetime.now()
 
         max_duration = (
-            self._reservation_service._policy_svc.maximum_initial_reservation_duration(
+            self._reservation_svc._policy_svc.maximum_initial_reservation_duration(
                 user
             )
         )  # max time a reservation can last
         time_range = TimeRange(start=now - max_duration, end=now + max_duration)
 
         reservations = (
-            self._reservation_service._get_active_reservations_for_user_by_state(
+            self._reservation_svc._get_active_reservations_for_user_by_state(
                 focus=user, time_range=time_range, state=ReservationState.CHECKED_IN
             )
         )
@@ -309,14 +313,14 @@ class ActiveUserService:
         
         # Expected output: a User object and its corresponding reservation
 
-        possible_users: list[User] = self._user_service.search(
+        possible_users: list[User] = self._user_svc.search(
             self, name
         )  # returns list of users matching params
 
         now = datetime.now()
 
         max_duration = (
-            self._reservation_service._policy_svc.maximum_initial_reservation_duration(
+            self._reservation_svc._policy_svc.maximum_initial_reservation_duration(
                 user
             )
         )
@@ -325,7 +329,7 @@ class ActiveUserService:
         reservations: list[ReservationState] = []
         for user in possible_users:
             reservations.append(
-                self._reservation_service._get_active_reservations_for_user_by_state(
+                self._reservation_svc._get_active_reservations_for_user_by_state(
                     focus=user, time_range=time_range, state=ReservationState.CHECKED_IN
                 )
             )
