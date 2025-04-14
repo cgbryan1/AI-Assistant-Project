@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends
 from pydantic import ValidationError
 
-from backend.models.academics.my_courses import TermOverview
+from backend.models.academics.my_courses import CourseSiteOverview, TermOverview
 from backend.models.active_students_response import (
     ActiveStudentResponse,
     ClassSearchResponse,
@@ -54,13 +54,9 @@ class ActiveUserService:
             return {User: None}
 
     def check_if_active_by_string(self, name: str) -> dict[User, str]:
-
-        # TODO AI integration here!
-        # Input for AI:
-        # 1. Context of request, including a warning to AI that there might be a typo
-        # 2. The user's input: name
-        # 3. List of active users in XL:
-        active_users: dict[User, str] = self.get_all_active_users(self._user)
+        """This method checks if a User is active in the CSXL based on a provided string (name, email, etc.).
+        AI is used to match the input across associated User fields and deal with typos.
+        """
 
         context: str = (
             "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
@@ -71,11 +67,12 @@ class ActiveUserService:
             "If you cannot decide between more than one potential option, you may return multiple key value pairs in the dictionary."
             "If there is no name match, return an empty dictionary. "
         )
+
+        active_users: dict[User, str] = self.get_all_active_users(self._user)
+
         conditional_input: str = (
             f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the user's input: {name}."
         )
-
-        # Expected output: a User object and its corresponding reservation
 
         ai_output: dict[
             User, str
@@ -99,15 +96,17 @@ class ActiveUserService:
             return self.check_if_active_by_pid(input)
 
     def get_active_classmates(self, course: str) -> dict[User, str]:
-        # Input for AI:
-        # 1. Context of request, including a warning to AI that there might be a typo
-        # 2. The user's input (string)
-        # 3. List of active users in XL
-
-        # These are the classes that the user is in ___.
-        current_classes: list[TermOverview] = (
+        """This method checks if any user is active in the CSXL based on a provided class filter).
+        AI is used to match the input across associated User fields and deal with typos.
+        """
+        # Classes in which the user is currently enrolled.
+        term_overview: list[TermOverview] = (
             self.course_site_service.get_user_course_sites(self._user)
         )
+        current_classes: list[CourseSiteOverview] = []
+        for term in term_overview:
+            for desired_course in course.sites:
+                current_classes.append(desired_course)
 
         # yapped here. very much welcome to revisions to be more concise!!! -caroline
         context: str = (
@@ -128,7 +127,7 @@ class ActiveUserService:
             []
         )  # We'll use this response to figure out which helper method to call.
 
-        # helper method:
+        # helper methods:
         active_users: dict[User, str] = self.get_all_active_users(self._user)
         common_users: dict[User, str] = {}
 
@@ -185,9 +184,9 @@ class ActiveUserService:
             return common_users
 
     def get_all_active_users(self, subject: User) -> dict[User, str]:
-        # Helper method for getting all active users (need ambassador permissions)
-        # takes in the user making the request to make sure appropriate permissions are granted
-        # Return as input to AI for parsing a dictionary of active users and returning based on required details
+        """Helper method for getting all active users (need ambassador permissions).
+        Takes in the user making the request to make sure appropriate permissions are granted.
+        Returned dict is used as input to AI."""
 
         # Collect all reservations (upcoming and active using ReservationService helper methods)
         # TODO for future story: implement ghost mode; we will exclude any students who can be on this list but activated ghost mode
@@ -209,7 +208,7 @@ class ActiveUserService:
                             0
                         ].location  # Assuming first seat is relevant
 
-                        # Use title isntead of id for a more descriptive name for user output
+                        # use title for a more descriptive name for output
                         active_users[user] = f"{seat_location.title}"
 
         # process room reservations
