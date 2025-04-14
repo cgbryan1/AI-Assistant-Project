@@ -7,15 +7,7 @@
  * @license MIT
  */
 
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  Signal,
-  computed,
-  WritableSignal,
-  signal
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, Signal, computed } from '@angular/core';
 import { ActivatedRoute, Route, Router } from '@angular/router';
 import { isAuthenticated } from 'src/app/gate/gate.guard';
 import { profileResolver } from 'src/app/profile/profile.resolver';
@@ -25,16 +17,13 @@ import { ProfileService } from 'src/app/profile/profile.service';
 import {
   CoworkingStatus,
   Reservation,
-  SeatAvailability,
-  MessageType,
-  Message
+  SeatAvailability
 } from '../coworking.models';
 import { Subscription, timer } from 'rxjs';
 import { RoomReservationService } from '../room-reservation/room-reservation.service';
 import { ReservationService } from '../reservation/reservation.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-coworking-home',
@@ -43,7 +32,6 @@ import { FormControl } from '@angular/forms';
 })
 export class CoworkingPageComponent implements OnInit, OnDestroy {
   public status: Signal<CoworkingStatus>;
-  messageCache: WritableSignal<Message[]> = signal([]);
 
   /** Store the currently-logged-in user's profile.  */
   public profile: Profile | null = null;
@@ -77,27 +65,6 @@ export class CoworkingPageComponent implements OnInit, OnDestroy {
       this.coworkingService.findActiveReservationPredicate
     );
   });
-
-  chatInput = new FormControl('');
-
-  onChatInput() {
-    if (this.chatInput.value) {
-      const newMessage = {
-        type: MessageType.UserMessage,
-        content: this.chatInput.value
-      };
-      this.messageCache.update((messages) => [...messages, newMessage]);
-    }
-
-    // need to link to backend, for now fake ai response
-    const aiMessage = {
-      type: MessageType.AIMessage,
-      content: 'Helpful insight from ConnectXL.'
-    };
-    this.messageCache.update((messages) => [...messages, aiMessage]);
-
-    this.chatInput.setValue('');
-  }
 
   private timerSubscription!: Subscription;
 

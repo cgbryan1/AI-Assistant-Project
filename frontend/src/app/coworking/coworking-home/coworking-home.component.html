@@ -66,58 +66,23 @@
 
 <div id="add-ons">
 <!-- Not at ALL implemented, not linked to anything, just a fun little switch for now -->
+<!-- structure and styling taken from <coworking-operating-hours-panel> to match -->
 <mat-pane>
-  <div id="ghost-toggle">
-    <h2>Ghost Mode</h2>
-    <p><mat-slide-toggle></mat-slide-toggle></p>
-  </div>
+  <mat-card-content class="header">
+    <div class="header-row">
+      <mat-card-title class="hours-title open">
+        <div class="header-row">
+          <span class="badge font-secondary">Ghost Mode</span>
+        </div>
+      </mat-card-title>
+
+      <mat-slide-toggle id="hours-button"></mat-slide-toggle>
+    </div>
+  </mat-card-content>
 </mat-pane>
 
 <!-- ChatBot -->
-<mat-pane appearance="outlined">
-  <!-- header -->
-  <mat-card-header>
-
-    <!-- <mat-card-title>Chat with ConnectXL</mat-card-title>
-    <button mat-stroked-button>i</button> -->
-
-    <mat-expansion-panel hideToggle>
-      <mat-expansion-panel-header>
-        <mat-panel-title> Chat with ConnectXL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <mat-icon matListItemIcon>info</mat-icon></mat-panel-title>
-        <!-- &nbsp; preserves whitespace -->
-      </mat-expansion-panel-header>
-      <h3>ConnectXL is an AI helper to assist with all of your coworking needs!</h3>
-      <p>Need some conversation starters?</p>
-      <p><i>make me a room reservation 2pm-3pm for 2 people</i></p>
-      <p><i>cancel my 2pm room reservation</i></p>
-      <p><i>are any of my classmates in the XL?</i></p>
-      <p><i>is Kris Jordan in the XL?</i></p>
-    </mat-expansion-panel>
-
-  </mat-card-header>
-
-  <mat-card-content>
-    <!-- box for messages -->
-    <cdk-virtual-scroll-viewport itemSize="50" class="message-box"> 
-      <!-- documentation @ https://material.angular.io/cdk/scrolling/overview -->
-      <div *cdkVirtualFor="let message of messageCache()">
-        @if (message.type === 'UserMessage') { <!-- styled diff in block based on source -->
-          <div class="user-message">{{message.content}}</div>
-        } @else { <!-- implicitly message.type=aiMessage -->
-          <div class="ai-message">{{message.content}}</div>
-        }
-      </div>
-    </cdk-virtual-scroll-viewport>
-
-    <!-- text input -->
-    <mat-form-field appearance="outline" class="text-input">
-      <input matInput placeholder="Start typing here..." [formControl]="chatInput" (keydown.enter)="onChatInput()">
-    </mat-form-field>
-    
-    <!--<button mat-stroked-button (click)="onChatInput()" [disabled]="!chat"><mat-icon matListItemIcon>arrow_forward</mat-icon></button>-->
-
-  </mat-card-content>
-</mat-pane>
+<chat-bot />
 </div>
 
 </div>

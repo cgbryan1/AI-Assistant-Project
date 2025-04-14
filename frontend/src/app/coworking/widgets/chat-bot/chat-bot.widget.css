@@ -1,0 +1,53 @@
+.title {
+    margin-block: 5px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.help-text {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #E8DEF9;
+    margin-top: 10px;
+    min-height: 220px;
+}
+
+.message-box {
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    margin-top: 10px;
+    background-color: rgb(237, 237, 237);
+    /* hide scrollbar as seen in this post: https://stackoverflow.com/questions/76692101/with-cdk-virtual-scroll-viewport-can-be-hidden-the-scroll-bar */
+    scrollbar-width: none; /* Hide scrollbar on Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar on IE and Edge */
+    overflow: -webkit-hidden-scrollbar; /* Hide scrollbar on Chrome, Safari, and newer versions of Edge */
+}
+
+.user-message {
+    padding: 5px 10px;
+    margin: 5px 5px 0;
+    border-radius: 10px;
+    justify-self: flex-end;
+    background-color: #E8DEF9;
+    width: fit-content;
+}
+
+.ai-message {
+    padding: 5px 10px;
+    margin: 5px 5px 0;
+    border-radius: 10px;
+    justify-self: flex-start;
+    background-color: white;
+    width: fit-content;
+}
+
+.text-input {
+    width: 100%;
+    padding-top: 10px;
+}

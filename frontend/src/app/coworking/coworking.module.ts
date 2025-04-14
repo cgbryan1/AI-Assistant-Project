@@ -35,10 +35,12 @@ import { DialogModule } from '@angular/cdk/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { ChatBot } from './widgets/chat-bot/chat-bot.widget';
 
 @NgModule({
   declarations: [
     NewReservationPageComponent,
+    ChatBot,
     RoomReservationWidgetComponent,
     CoworkingPageComponent,
     ReservationComponent,
