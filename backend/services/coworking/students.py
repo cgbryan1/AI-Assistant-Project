@@ -1,12 +1,19 @@
 from datetime import datetime
+from typing import Annotated
 from fastapi import Depends
+from pydantic import ValidationError
 
 from backend.models.academics.my_courses import TermOverview
+from backend.models.active_students_response import (
+    ActiveStudentResponse,
+    ClassSearchResponse,
+)
 from backend.models.coworking.reservation import ReservationState
 from backend.models.coworking.time_range import TimeRange
 from backend.models.office_hours.course_site import CourseSite
 from backend.models.user import User
 from backend.models.user_details import UserDetails
+from backend.services.openai import OpenAIService
 from ..user import UserService
 from backend.services.coworking.reservation import ReservationService
 from backend.services.academics.course_site import CourseSiteService
@@ -23,10 +30,15 @@ class ActiveUserService:
     course_site_service: CourseSiteService
     section_service: SectionService
 
-    def __init__(self, user_service: UserService = Depends()):
+    def __init__(
+        self,
+        openai_svc: Annotated[OpenAIService, Depends()],
+        user_service: UserService = Depends(),
+    ):
         """Initialize the User Service."""
         self._user = user_service
         self.reservation_service: ReservationService = Depends()
+        self._openai_svc = openai_svc
 
     def check_if_active_by_pid(self, pid: int) -> dict[User, str]:
         user: User = self._user_service.get(pid)
@@ -43,16 +55,41 @@ class ActiveUserService:
 
     def check_if_active_by_string(self, name: str) -> dict[User, str]:
 
-        # AI integration here!
+        # TODO AI integration here!
         # Input for AI:
-        # 1. The user's input: name
-        # 2. Context of request, including a warning to AI that there might be a typo
+        # 1. Context of request, including a warning to AI that there might be a typo
+        # 2. The user's input: name
         # 3. List of active users in XL:
         active_users: dict[User, str] = self.get_all_active_users(self._user)
 
+        context: str = (
+            "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
+            "The client is requesting a user by name - we need to know if this user is active in the coworking space, and if the user is active, what room they are in. "
+            "You will recieve a dictionary with Users as keys and their reservations as values."
+            "Compare the input against the dictionary. If you're able to match the client's input with an active user, send back a dictionary with the key being the User object and the corresponding reservation. "
+            "Be conscious of potential typos/misspellings and please try to only return one user. "
+            "If you cannot decide between more than one potential option, you may return multiple key value pairs in the dictionary."
+            "If there is no name match, return an empty dictionary. "
+        )
+        conditional_input: str = (
+            f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the user's input: {name}."
+        )
+
         # Expected output: a User object and its corresponding reservation
 
-        return None
+        ai_output: dict[
+            User, str
+        ]  # We'll use this response to figure out which helper method to call.
+
+        response_model = ActiveStudentResponse
+
+        try:
+            ai_output = self._openai_svc.prompt(
+                context, conditional_input, response_model
+            )
+            return ai_output
+        except (KeyError, AttributeError, ValidationError) as e:
+            return ActiveStudentResponse(ai_output={})
 
     def check_if_active(self, input: str | int) -> dict[User, str]:
         """Umbrella method for API call"""
@@ -62,31 +99,48 @@ class ActiveUserService:
             return self.check_if_active_by_pid(input)
 
     def get_active_classmates(self, course: str) -> dict[User, str]:
-        # AI integration here!
         # Input for AI:
-        # 1. The user's input (string)
-        # 2. Context of request, including a warning to AI that there might be a typo
+        # 1. Context of request, including a warning to AI that there might be a typo
+        # 2. The user's input (string)
         # 3. List of active users in XL
-
-        # Input:
-        # f"This is the user's input: {course}."
 
         # These are the classes that the user is in ___.
         current_classes: list[TermOverview] = (
             self.course_site_service.get_user_course_sites(self._user)
         )
-        # If the user is looking for a specific class, return a list with their course abbreviation, number, and section (each as an index).
-        # If they're searching for people in any class, please return an empty list."
 
-        # Expected output: a list - empty if searching all classes, with search params if by section
-        # We'll use this response to figure out which helper method to call.
+        # yapped here. very much welcome to revisions to be more concise!!! -caroline
+        context: str = (
+            "You are an assistant that interprets user input to enable other functions, chosen for the ability to look past potential typos. "
+            "The student is sharing a course that they may or may not be a member of. "
+            "Compare their input against the courses that they are registered for. Send back a list of strings. "
+            "If the user inputs NO course then return this list empty. "
+            "If you're able to match the user's input with one of their registered courses, return a list with the first index being the course subject abbreviation (eg. COMP), the second index being the number (eg. 436) and the third index being the section (eg. 001). "
+            "If you cannot fulfill the request due to an error (e.g., invalid input, missing information), return the list with a singular value: a concise error message to be sent directly to the user."
+        )
 
-        ai_output: list[str] = []  # placeholder for now
+        conditional_input: str = (
+            f"This is the user's input: {course}. This is a list of the courses that the user is in: {current_classes}."
+        )
+        response_model = ClassSearchResponse
+
+        ai_output: list[str] = (
+            []
+        )  # We'll use this response to figure out which helper method to call.
 
         # helper method:
         active_users: dict[User, str] = self.get_all_active_users(self._user)
         common_users: dict[User, str] = {}
 
+        try:
+            ai_output = self._openai_svc.prompt(
+                context, conditional_input, response_model
+            )
+        except (KeyError, AttributeError, ValidationError) as e:
+            ai_output = []
+
+        if len(ai_output == 1):
+            raise ValueError(ai_output[0])
         if len(ai_output) > 0:  # check specific class
             site_id = ai_output[0]
             pagination_params = ai_output[1]  # sample output
