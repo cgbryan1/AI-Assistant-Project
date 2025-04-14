@@ -9,6 +9,7 @@ Usage: python3 -m script.create_database
 import sqlalchemy
 import sys
 from ..env import getenv
+from sqlalchemy.ext.declarative import declarative_base
 
 __authors__ = ["Kris Jordan"]
 __copyright__ = "Copyright 2023"
@@ -34,6 +35,7 @@ def _engine_str() -> str:
 engine = sqlalchemy.create_engine(_engine_str(), echo=True)
 """Application-level SQLAlchemy database engine."""
 
+Base = declarative_base()  # come back @ caroline
 
 with engine.connect() as connection:
     connection.execute(

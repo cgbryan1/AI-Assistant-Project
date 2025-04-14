@@ -1,7 +1,10 @@
 """RoleDetails extends the Role model to include the permissions and users associated with the role."""
 
 from pydantic import BaseModel
-from . import User, Permission, Role
+from .role import Role
+from .user import User
+from .permission import Permission
+
 
 __authors__ = ["Kris Jordan"]
 __copyright__ = "Copyright 2023"

@@ -3,6 +3,9 @@
 from datetime import datetime
 from sqlalchemy import Integer, String, Boolean, ForeignKey, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
+
+# from backend.entities.room_entity import RoomEntity
+
 from ..entity_base import EntityBase
 from ...models.coworking import Reservation, ReservationState, ReservationOverview
 from .seat_entity import SeatEntity

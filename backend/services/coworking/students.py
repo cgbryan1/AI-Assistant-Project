@@ -18,6 +18,13 @@ from ..user import UserService
 from backend.services.coworking.reservation import ReservationService
 from backend.services.academics.course_site import CourseSiteService
 from backend.services.academics import SectionService
+from backend.entities.coworking.reservation_entity import ReservationEntity
+
+"""
+Connecting to UserEntity and ReservationEntity 
+(have imports for now, but we will retreive data via UserService and ReservationService)
+"""
+
 
 __authors__ = ["Emma Coye", "Manasi Chaudhary", "Caroline Bryan", "Kathryn Brown"]
 __copyright__ = "Copyright 2025"
@@ -37,22 +44,28 @@ class ActiveUserService:
         reservation_service: ReservationService = Depends(),
     ):
         """Initialize the User Service."""
-        self._user_svc = user_service
-        self._reservation_svc = reservation_service
-        self._openai_svc = openai_svc
+
+        self._user = user_service
+        """Initialize Reservation Service"""
+        self._reservation = reservation_service
 
     def check_if_active_by_pid(self, pid: int) -> dict[User, str]:
-        user: User = self._user_svc.get(pid)
+        user: User = self.user_service.get(pid)
+        if not user:
+            return {}  # user does not exist
 
-        reservations = self._reservation_svc.get_current_reservations_for_user(
-            subject=user,
-            focus=user,
-            state=ReservationState.CHECKED_IN,
+        active_reservations = (
+            self.reservation_service.get_current_reservations_for_user(
+                subject=user,
+                focus=user,
+                state=ReservationState.CHECKED_IN,
+            )
         )
-        if len(reservations) > 0:
-            return {user: reservations[0]._seat_svc}
+
+        if active_reservations:  # return location
+            return {user: active_reservations[0]._seat_svc}
         else:
-            return {User: None}
+            return {user: None}  # has no active reservations
 
     def check_if_active_by_string(self, name: str) -> dict[User, str]:
         """This method checks if a User is active in the CSXL based on a provided string (name, email, etc.).
@@ -71,6 +84,15 @@ class ActiveUserService:
 
         active_users: dict[User, str] = self.get_all_active_users(self._user)
 
+#         # TODO: possibly implement fuzzy matching and difflib to account for typos
+#         matching = {}
+
+#         for user, seat_info in active_users.items():
+#             full_name = f"{user.first_name} {user.last_name}"
+#             if full_name.strip().lower() == name.strip().lower():
+#                 matching[user] = seat_info
+
+#         return matching
         conditional_input: str = (
             f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the user's input: {name}."
         )
