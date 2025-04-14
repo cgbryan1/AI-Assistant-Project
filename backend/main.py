@@ -23,7 +23,7 @@ from .api import (
     signage,
     websocket,
 )
-from .api.coworking import status, reservation, ambassador, operating_hours
+from .api.coworking import status, reservation, ambassador, operating_hours, request
 from .api.academics import section_member, term, course, section, my_courses, hiring
 from .api.office_hours import (
     office_hours as office_hours_event,
@@ -72,6 +72,7 @@ app = FastAPI(
         admin_facts.openapi_tags,
         article.openapi_tags,
         signage.openapi_tags,
+        request.openapi_tags
     ],
 )
 
@@ -107,6 +108,7 @@ feature_apis = [
     signage,
     websocket,
     students,
+    request,
 ]
 
 for feature_api in feature_apis:

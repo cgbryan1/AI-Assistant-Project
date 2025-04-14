@@ -7,6 +7,7 @@
 import { Component, WritableSignal, signal } from '@angular/core';
 import { MessageType, Message } from '../../coworking.models';
 import { FormControl } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'chat-bot',
@@ -18,6 +19,10 @@ export class ChatBot {
   infoShow: WritableSignal<Boolean> = signal(false);
 
   chatInput = new FormControl('');
+  endpoint = `/api/ai_request/`;
+
+  /** Constructor */
+  constructor(protected http: HttpClient) {}
 
   infoClicked() {
     this.infoShow.set(!this.infoShow());
@@ -31,18 +36,27 @@ export class ChatBot {
         content: this.chatInput.value
       };
       this.messageCache.update((messages) => [...messages, newMessage]);
+
+      // backend
+      const params = { user_prompt: `${newMessage.content}` };
+      this.http
+        .get(`${this.endpoint}`, { params, responseType: 'text' })
+        .subscribe((result: string) => {
+          console.log(result);
+          const aiMessage = {
+            type: MessageType.AIMessage,
+            content: result.slice(1, result.length - 1) // removing quotes from message
+          };
+          this.messageCache.update((messages) => [...messages, aiMessage]);
+        });
+
+      /* const aiMessage = {     <- dummy meassage
+        type: MessageType.AIMessage,
+        content: 'Helpful insight.'
+      };
+      this.messageCache.update((messages) => [...messages, aiMessage]); */
+
+      this.chatInput.setValue(''); // resets to empty input
     }
-
-    // need to link to backend, for now fake ai response
-    const aiMessage = {
-      type: MessageType.AIMessage,
-      content: 'Helpful insight.'
-    };
-    this.messageCache.update((messages) => [...messages, aiMessage]);
-
-    this.chatInput.setValue('');
   }
-
-  /** Constructor */
-  constructor() {}
 }
