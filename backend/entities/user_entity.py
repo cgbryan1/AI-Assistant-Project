@@ -5,6 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Self
 
 from backend.entities.academics.section_member_entity import SectionMemberEntity
+from backend.entities.coworking import reservation_user_table
 from backend.models.academics.section_member import SectionMember
 from .entity_base import EntityBase
 from .user_role_table import user_role_table
@@ -88,6 +89,10 @@ class UserEntity(EntityBase):
     hiring_assignments: Mapped[list["HiringAssignmentEntity"]] = relationship(
         back_populates="user"
     )
+
+    # reservations: Mapped[list["ReservationEntity"]] = relationship(
+    #     "ReservationEntity", secondary=reservation_user_table, back_populates="users"
+    # )
 
     def full_name(self) -> str:
         """

@@ -40,7 +40,9 @@ class ReservationEntity(EntityBase):
     )
 
     # Relationships
-    users: Mapped[list[UserEntity]] = relationship(secondary=reservation_user_table)
+    users: Mapped[list[UserEntity]] = relationship(
+        secondary=reservation_user_table, back_populates="reservations"
+    )
     seats: Mapped[list[SeatEntity]] = relationship(secondary=reservation_seat_table)
     room: Mapped["RoomEntity"] = relationship("RoomEntity")
 

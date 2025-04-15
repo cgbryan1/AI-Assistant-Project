@@ -5,7 +5,8 @@ __copyright__ = "Copyright 2025"
 __license__ = "MIT"
 
 class GeneralAIResponse(BaseModel):
-    message: str
+    method: str
+    expected_input: str
 
 class NoSuchPathException(Exception):
     pass

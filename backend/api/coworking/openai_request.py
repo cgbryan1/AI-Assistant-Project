@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from backend.services.coworking.openai_request import AIRequestService 
+from backend.services.coworking.openai_request import AIRequestService
 from backend.models.coworking.openai_request import NoSuchPathException
 
 __authors__ = ["Emma Coye, Manasi Chaudhary, Caroline Bryan, Kathryn Brown"]
@@ -12,7 +12,9 @@ openapi_tags = {
     "description": "Make a chat request to OpenAI.",
 }
 
-@api.get('/',
+
+@api.get(
+    "/",
     summary="Make a chat request to OpenAI",
     description="Determining which API path should be called based on user request.",
     responses={
@@ -23,10 +25,11 @@ openapi_tags = {
             "description": "No current functionality matches your request.",
         },
     },
-    tags=["AI"])
+    tags=["AI"],
+)
 def determine_request(
-    user_prompt: str,
-    request_svc: AIRequestService = Depends()) -> str:
+    user_prompt: str, request_svc: AIRequestService = Depends()
+) -> str:
     try:
         # returning endpoint rn just for viewing purposes
         # in actuality would call endpoint function
@@ -37,4 +40,4 @@ def determine_request(
     except NoSuchPathException:
         return "No current functionality matches your request."
     except:
-        return "Students endpoint error."
+        return "API endpoint response!"

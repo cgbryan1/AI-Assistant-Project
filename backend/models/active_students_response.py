@@ -1,3 +1,4 @@
+from typing import List, Optional
 from pydantic import BaseModel
 
 from backend.models.user import User
@@ -12,7 +13,8 @@ class ActiveStudentResponse(BaseModel):
     Returns corresponding User and reservation (as string), multiple if multiple hits.
     """
 
-    active_users: dict[User, str]
+    active_users: Optional[dict[str, str]] = None
+    # message: str
 
 
 class ClassSearchResponse(BaseModel):
@@ -24,4 +26,4 @@ class ClassSearchResponse(BaseModel):
     Empty: not searching for a specific class.
     """
 
-    course_details: list[str]
+    course_details: Optional[List[str]] = None

@@ -89,13 +89,20 @@ class OpenAIService:
             ],
         )
 
-        if (
-            not completion.choices
-            or not completion.choices[0].message
-            or not completion.choices[0].message.content
-        ):
-            raise ValueError("Invalid response from the OpenAI API")
-        else:
-            return response_model.model_validate_json(
-                completion.choices[0].message.content
-            )
+        # not sure if i'm allowed to change this lol
+        raw_response = completion.choices[0].message.content
+        print("Raw OpenAI API response:", raw_response)
+        if not raw_response:
+            raise ValueError("Empty response from OpenAI API")
+        return response_model.model_validate_json(raw_response)
+
+        # if (
+        #     not completion.choices
+        #     or not completion.choices[0].message
+        #     or not completion.choices[0].message.content
+        # ):
+        #     raise ValueError("Invalid response from the OpenAI API")
+        # else:
+        #     return response_model.model_validate_json(
+        #         completion.choices[0].message.content
+        #     )

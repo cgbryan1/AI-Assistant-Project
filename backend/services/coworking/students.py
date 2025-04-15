@@ -1,7 +1,13 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Self
 from fastapi import Depends
 from pydantic import ValidationError
+
+# from backend.test.services.user_data import root, ambassador, uta
+from backend.test.services import user_data
+
+
+# from backend.test.services.core_data import user_data
 
 from backend.models.academics.my_courses import CourseSiteOverview, TermOverview
 from backend.models.active_students_response import (
@@ -34,97 +40,77 @@ __license__ = "MIT"
 class ActiveUserService:
     _user: UserService
     _reservation_svc: ReservationService
-    course_site_service: CourseSiteService
-    section_service: SectionService
+    _course_site_svc: CourseSiteService
+    _section_svc: SectionService
+    _openai_svc: OpenAIService
 
     def __init__(
         self,
         openai_svc: Annotated[OpenAIService, Depends()],
         user_service: UserService = Depends(),
         reservation_service: ReservationService = Depends(),
+        course_site_svc: CourseSiteService = Depends(),
+        section_svc: SectionService = Depends(),
     ):
         """Initialize the User Service."""
-
         self._user = user_service
         """Initialize Reservation Service"""
-        self._reservation = reservation_service
+        self._reservation_svc = reservation_service
+        self._course_site_svc = course_site_svc
+        self._section_svc = section_svc
+        self._openai_svc = openai_svc
+        self._section_svc = section_svc
 
-    def check_if_active_by_pid(self, pid: int) -> dict[User, str]:
-        user: User = self.user_service.get(pid)
-        if not user:
-            return {}  # user does not exist
-
-        active_reservations = (
-            self.reservation_service.get_current_reservations_for_user(
-                subject=user,
-                focus=user,
-                state=ReservationState.CHECKED_IN,
-            )
-        )
-
-        if active_reservations:  # return location
-            return {user: active_reservations[0]._seat_svc}
-        else:
-            return {user: None}  # has no active reservations
-
-    def check_if_active_by_string(self, name: str) -> dict[User, str]:
-        """This method checks if a User is active in the CSXL based on a provided string (name, email, etc.).
-        AI is used to match the input across associated User fields and deal with typos.
-        """
-
+    def check_if_active_by_string(self, input: str) -> str:
         context: str = (
             "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
             "The client is requesting a user by name - we need to know if this user is active in the coworking space, and if the user is active, what room they are in. "
             "You will recieve a dictionary with Users as keys and their reservations as values."
-            "Compare the input against the dictionary. If you're able to match the client's input with an active user, send back a dictionary with the key being the User object and the corresponding reservation. "
+            "Compare the input against the dictionary. If you're able to match the client's input with an active user, send back an active users dictionary with the key being the User object and the corresponding reservation, as well as a string message confirming or denying if the user is in the XL and where they are based on their reservation. "
             "Be conscious of potential typos/misspellings and please try to only return one user. "
             "If you cannot decide between more than one potential option, you may return multiple key value pairs in the dictionary."
             "If there is no name match, return an empty dictionary. "
         )
 
-        active_users: dict[User, str] = self.get_all_active_users(self._user)
+        active_users: dict[User, str] = self.get_all_active_users()
 
-#         # TODO: possibly implement fuzzy matching and difflib to account for typos
-#         matching = {}
-
-#         for user, seat_info in active_users.items():
-#             full_name = f"{user.first_name} {user.last_name}"
-#             if full_name.strip().lower() == name.strip().lower():
-#                 matching[user] = seat_info
-
-#         return matching
         conditional_input: str = (
-            f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the user's input: {name}."
+            f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the user's request: {input}."
         )
 
-        ai_output: dict[
-            User, str
-        ]  # We'll use this response to figure out which helper method to call.
-
         response_model = ActiveStudentResponse
+        ai_response: dict[User, str] = {}
 
         try:
-            ai_output = self._openai_svc.prompt(
+            ai_response = self._openai_svc.prompt(
                 context, conditional_input, response_model
             )
-            return ai_output
-        except (KeyError, AttributeError, ValidationError) as e:
-            return ActiveStudentResponse(ai_output={})
+            # result is empty or active_users is None - use this message
+            if ai_response == {} or not active_users:
+                return f"No active user found matching your input."
+            return ai_response
+        # except ValueError as ve:
+        # return str(ve)
+        except Exception as e:
+            return f"Error processing request."
 
-    def check_if_active(self, input: str | int) -> dict[User, str]:
-        """Umbrella method for API call"""
-        if input is str:
-            return self.check_if_active_by_string(input)
-        if input is int:
-            return self.check_if_active_by_pid(input)
+    """
+    def check_if_active(self, input: str | int) -> str:
+        # Umbrella method for API call
+
+        print(input)
+        return self.check_if_active_by_string(input)
+        # if input is int:
+        # return self.check_if_active_by_pid(input)
+    """
 
     def get_active_classmates(self, course: str) -> dict[User, str]:
         """This method checks if any user is active in the CSXL based on a provided class filter).
         AI is used to match the input across associated User fields and deal with typos.
         """
         # Classes in which the user is currently enrolled.
-        term_overview: list[TermOverview] = (
-            self.course_site_service.get_user_course_sites(self._user)
+        term_overview: list[TermOverview] = self._course_site_svc.get_user_course_sites(
+            self._user
         )
         current_classes: list[CourseSiteOverview] = []
         for term in term_overview:
@@ -151,7 +137,7 @@ class ActiveUserService:
         )  # We'll use this response to figure out which helper method to call.
 
         # helper methods:
-        active_users: dict[User, str] = self.get_all_active_users(self._user)
+        active_users: dict[User, str] = self.get_all_active_users()
         common_users: dict[User, str] = {}
 
         try:
@@ -166,7 +152,7 @@ class ActiveUserService:
         if len(ai_output) > 0:  # check specific class
             site_id = ai_output[0]
             pagination_params = ai_output[1]  # sample output
-            self.course_site_service.get_course_site_roster(
+            self._course_site_svc.get_course_site_roster(
                 self._user, site_id, pagination_params
             )
 
@@ -191,7 +177,7 @@ class ActiveUserService:
                 if other_user == self._user:
                     continue
 
-                other_user_classes = self.course_site_service.get_user_course_sites(
+                other_user_classes = self._course_site_svc.get_user_course_sites(
                     other_user
                 )
                 other_user_class_ids = {course.site_id for course in other_user_classes}
@@ -206,43 +192,112 @@ class ActiveUserService:
 
             return common_users
 
-    def get_all_active_users(self, subject: User) -> dict[User, str]:
-        """Helper method for getting all active users (need ambassador permissions).
-        Takes in the user making the request to make sure appropriate permissions are granted.
-        Returned dict is used as input to AI."""
+    def get_all_active_users(self) -> dict[str, str]:
+        active_users = {}
 
-        # Collect all reservations (upcoming and active using ReservationService helper methods)
-        # TODO for future story: implement ghost mode; we will exclude any students who can be on this list but activated ghost mode
-        xl_reservations = self._reservation_svc.list_all_active_and_upcoming_for_xl(
-            subject
-        )
-        room_reservations = (
-            self._reservation_svc.list_all_active_and_upcoming_for_rooms(subject)
-        )
-        active_users = {}  # Store User object and location
+        # dont return immeadatly - returns str, str
+        try:
+            room_reservations = (
+                self._reservation_svc.list_all_active_and_upcoming_for_rooms(
+                    user_data.root
+                )
+            )
+            print("Room Reservations:", room_reservations)
+        except Exception as e:
+            print("Could not get current room reservations, please check your input!")
+            room_reservations = []
 
-        # process XL reservations
+        try:
+            xl_reservations = self._reservation_svc.list_all_active_and_upcoming_for_xl(
+                user_data.root
+            )
+        except Exception as e:
+            print("Could not get current room reservations, please check your input!")
+            xl_reservations = []
+
         for reservation in xl_reservations:
             if reservation.state == ReservationState.CHECKED_IN:
-                for user in reservation.users:
-                    # Get seat loc
-                    if reservation.seats and len(reservation.seats) > 0:
-                        seat_location = reservation.seats[
-                            0
-                        ].location  # Assuming first seat is relevant
+                if reservation.seats and len(reservation.seats) > 0:
+                    seat_location = reservation.seats[0].location
+                    for user in reservation.users:
+                        active_users[str(user)] = (
+                            seat_location.title
+                        )  # change to user str
 
-                        # use title for a more descriptive name for output
-                        active_users[user] = f"{seat_location.title}"
-
-        # process room reservations
         for reservation in room_reservations:
             if reservation.state == ReservationState.CHECKED_IN:
                 for user in reservation.users:
-                    # Get room loc
                     room_id = reservation.room.id
-                    active_users[user] = f"{room_id}"
-
+                    active_users[str(user)] = str(room_id)  # change to user str
+        # output for testing
+        print("Active Users:", active_users)
         return active_users
+
+    # def get_all_active_users(self) -> dict[User, str]:
+    #     """Helper method for getting all active users (need ambassador permissions).
+    #     Takes in the user making the request to make sure appropriate permissions are granted.
+    #     Returned dict is used as input to AI."""
+
+    #     # using root test account to access these privileges
+
+    #     # Collect all reservations (upcoming and active using ReservationService helper methods)
+    #     # TODO for future story: implement ghost mode; we will exclude any students who can be on this list but activated ghost mode
+    #     # TODO try putting this in try vcatch blick?
+
+    #     try:
+    #         room_reservations = (
+    #             self._reservation_svc.list_all_active_and_upcoming_for_rooms(
+    #                 user_data.root
+    #             )
+    #         )
+    #         return len({room_reservations})
+    #     except:
+    #         return "issue getting room resys"
+    #     try:
+    #         print(f"[DEBUG] Got {len(room_reservations)} room reservations")
+    #     except:
+    #         print("issue getting length of room_reservations")
+
+    #     # ----------------
+    #     try:  # TODO problem here
+    #         xl_reservations = self._reservation_svc.list_all_active_and_upcoming_for_xl(
+    #             user_data.root
+    #         )
+    #     except:
+    #         print(f"Error getting XL reservations")
+
+    #     try:
+    #         print(f"[DEBUG] Got {len(xl_reservations)} XL reservations")
+    #     except:
+    #         print(f"[DEBUG]: error when trying to access the length of xl reservations")
+
+    #     # ----
+    #     active_users = {}  # Store User object and location
+
+    #     # process XL reservations
+    #     for reservation in xl_reservations:
+    #         if reservation.state == ReservationState.CHECKED_IN:
+    #             for user in reservation.users:
+    #                 # Get seat loc
+    #                 if reservation.seats and len(reservation.seats) > 0:
+    #                     seat_location = reservation.seats[
+    #                         0
+    #                     ].location  # Assuming first seat is relevant
+
+    #                     # use title for a more descriptive name for output
+    #                     active_users[user] = (
+    #                         f"{seat_location.title}"  # TODO come back error here
+    #                     )
+
+    #     # process room reservations
+    #     for reservation in room_reservations:
+    #         if reservation.state == ReservationState.CHECKED_IN:
+    #             for user in reservation.users:
+    #                 # Get room loc
+    #                 room_id = reservation.room.id
+    #                 active_users[user] = f"{room_id}"
+
+    #     return active_users
 
 
 """
@@ -288,9 +343,28 @@ class ActiveUserService:
 
 # -------------------------------- Code Graveyard
 
+""" def check_if_active_by_pid(self, pid: int) -> dict[User, str]:
+        user: User = self.user_service.get(pid)
+        if not user:
+            return {}  # user does not exist
+
+        active_reservations = (
+            self.reservation_service.get_current_reservations_for_user(
+                subject=user,
+                focus=user,
+                state=ReservationState.CHECKED_IN,
+            )
+        )
+
+        if active_reservations:  # return location
+            return {user: active_reservations[0]._seat_svc}
+        else:
+            return {user: None}  # has no active reservations 
+            """
+
+# Removing for the below purpose - will come back to this if needed, so don't want to delete in case
+# TODO i feel less confident in this implementation but if we do it right it could be more efficient? idk.
 """
-    # Removing for the below purpose - will come back to this if needed, so don't want to delete in case
-    # TODO i feel less confident in this implementation but if we do it right it could be more efficient? idk.
     def check_if_active_by_pid2(self, pid: int) -> dict[User, str]:
         user: User = self._user_svc.get(pid)  # get the user by pid
         now = datetime.now()
@@ -320,8 +394,8 @@ class ActiveUserService:
         # use get_seat_reservations() ?
         active_users = {}  # sort by user id
         now = datetime.now()
-        # TODO should we directly query the database here?
-        """
+    """
+# TODO should we directly query the database here?
 
 # old implementation without AI:
 """
@@ -369,7 +443,7 @@ class ActiveUserService:
             self.section_service.get()
         )  # returns a CatalogSection TODO how to work with it?
 
-        roster = self.course_site_service.get_course_site_roster(
+        roster = self._course_site_svc.get_course_site_roster(
             self._user, course.id
         )  # TODO add pagination params
         # returns Paginated[CourseMemberOverview]:
