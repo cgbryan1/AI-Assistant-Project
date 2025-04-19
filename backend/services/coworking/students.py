@@ -269,11 +269,9 @@ class ActiveUserService:
         for reservation in xl_reservations:
             if reservation.state == ReservationState.CHECKED_IN:
                 if reservation.seats and len(reservation.seats) > 0:
-                    seat_location = reservation.seats[0].location
+                    seat_location = reservation.seats[0].title
                     for user in reservation.users:
-                        active_users[str(user)] = (
-                            seat_location.title
-                        )  # change to user str
+                        active_users[str(user)] = seat_location
 
         for reservation in room_reservations:
             if reservation.state == ReservationState.CHECKED_IN:

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 from ..entity_base import EntityBase
 from ...models.coworking import Reservation, ReservationState, ReservationOverview
 from .seat_entity import SeatEntity
+
 from ..user_entity import UserEntity
 from .reservation_user_table import reservation_user_table
 from .reservation_seat_table import reservation_seat_table

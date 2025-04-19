@@ -5,7 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Self
 
 from backend.entities.academics.section_member_entity import SectionMemberEntity
-from backend.entities.coworking import reservation_user_table
+
+# from backend.entities.coworking import reservation_user_table
 from backend.models.academics.section_member import SectionMember
 from .entity_base import EntityBase
 from .user_role_table import user_role_table
@@ -88,6 +89,15 @@ class UserEntity(EntityBase):
     # NOTE: This field establishes a one-to-many relationship between the users and article table.
     hiring_assignments: Mapped[list["HiringAssignmentEntity"]] = relationship(
         back_populates="user"
+    )
+
+    reservations: Mapped[list["ReservationEntity"]] = relationship(
+        "ReservationEntity",
+        secondary=lambda: __import__(
+            "backend.entities.coworking.reservation_user_table",
+            fromlist=["reservation_user_table"],
+        ).reservation_user_table,
+        back_populates="users",
     )
 
     # reservations: Mapped[list["ReservationEntity"]] = relationship(
