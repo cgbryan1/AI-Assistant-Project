@@ -58,7 +58,7 @@ class AIRequestService:
                         ai_response.expected_input
                     )
                 except Exception as e:
-                    return f"Request couldn't be completed, please reattempt with more details."
+                    return f"Request couldn't be completed, please reattempt with more details. Error: {e}."
 
             elif ai_response.method == "get_active_classmates":
                 try:
@@ -66,6 +66,6 @@ class AIRequestService:
                         ai_response.expected_input
                     )
                 except Exception as e:
-                    return f"Request couldn't be completed, please reattempt with more details."
+                    return f"Request couldn't be completed, please reattempt with more details. Error: {e}."
         else:
             raise NoSuchPathException()  # thrown if ai returns empty string

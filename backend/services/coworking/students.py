@@ -61,7 +61,62 @@ class ActiveUserService:
         self._openai_svc = openai_svc
         self._section_svc = section_svc
 
-    def check_if_active_by_string(self, input: str) -> str:
+    # def check_if_active_by_string(self, name: str) -> str:
+    #     """This method checks if a User is active in the CSXL based on a provided string (name, email, etc.).
+    #     AI is used to match the input across associated User fields and deal with typos.
+    #     """
+
+    #     context: str = (
+    #         "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
+    #         "The client is requesting a user by name - we need to know if this user is active in the coworking space, and if the user is active, what room they are in. "
+    #         "You will recieve a dictionary with Users as keys and their reservations as values."
+    #         "Compare the input against the dictionary. If you're able to match the client's input with an active user, send back an active users dictionary with the key being the User object and the corresponding reservation, as well as a string message confirming or denying if the user is in the XL and where they are based on their reservation. "
+    #         "Be conscious of potential typos/misspellings and please try to only return one user. "
+    #         "If you cannot decide between more than one potential option, you may return multiple key value pairs in the dictionary."
+    #         "If there is no name match, return an empty model. "
+    #     )
+
+    #     try:
+    #         active_users: dict[User, str] = self.get_all_active_users()
+    #         print(f"{active_users} come back here")
+    #     except:
+    #         print("problem with get_all_active_users")
+
+    #     #         # TODO: possibly implement fuzzy matching and difflib to account for typos
+    #     #         matching = {}
+
+    #     #         forcourse_site user, seat_info in active_users.items():
+    #     #             full_name = f"{user.first_name} {user.last_name}"
+    #     #             if full_name.strip().lower() == name.strip().lower():
+    #     #                 matching[user] = seat_info
+
+    #     #         return matching
+    #     conditional_input: str = (
+    #         f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the name of the person the user is searching for: {name}."
+    #     )
+
+    #     test_conditional_inpt: str = (
+    #         f"This is a dictionary of active users and corresponding reservations in the coworking space: {ambassador: , uta: }. Here is the name of the person the user is searching for: Uhlissa."
+    #     )
+
+    #     """ ai_output: dict[
+    #         User, str
+    #     ]  # We'll use this response to figure out which helper method to call. """
+
+    #     response_model = ActiveStudentResponse
+
+    #     try:
+    #         return self._openai_svc.prompt(
+    #             context, test_conditional_inpt, response_model
+    #         )
+    #         # print(ai_output)
+    #         # return ai_output
+    #     except ValueError as ve:
+    #         return ve
+    #     except:
+    #         return f"having problems, {active_users}"  # we know the list is populating
+
+    def check_if_active_by_string(self, name: str) -> str:
         context: str = (
             "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
             "The client is requesting a user by name - we need to know if this user is active in the coworking space, and if the user is active, what room they are in. "
@@ -69,30 +124,26 @@ class ActiveUserService:
             "Compare the input against the dictionary. If you're able to match the client's input with an active user, send back an active users dictionary with the key being the User object and the corresponding reservation, as well as a string message confirming or denying if the user is in the XL and where they are based on their reservation. "
             "Be conscious of potential typos/misspellings and please try to only return one user. "
             "If you cannot decide between more than one potential option, you may return multiple key value pairs in the dictionary."
-            "If there is no name match, return an empty dictionary. "
+            "If there is no name match, return an empty model. "
         )
 
-        active_users: dict[User, str] = self.get_all_active_users()
-
+        active_users = self.get_all_active_users()  # this returns dict[str, str]
         conditional_input: str = (
-            f"This is a dictionary of active users and corresponding reservations in the coworking space: {active_users}. Here is the user's request: {input}."
+            f"This is a dictionary of active users and their corresponding reservations in the coworking space: {active_users}. Here is the name of the person the user is searching for: {name}."
         )
-
-        response_model = ActiveStudentResponse
-        ai_response: dict[User, str] = {}
 
         try:
-            ai_response = self._openai_svc.prompt(
-                context, conditional_input, response_model
+            response: ActiveStudentResponse = self._openai_svc.prompt(
+                context, conditional_input, ActiveStudentResponse
             )
             # result is empty or active_users is None - use this message
-            if ai_response == {} or not active_users:
-                return f"No active user found matching your input."
-            return ai_response
-        # except ValueError as ve:
-        # return str(ve)
+            if response.active_users is None or not response.active_users:
+                return f"{name} is not in the XL right now."
+            return response.message
+        except ValueError as ve:
+            return str(ve)
         except Exception as e:
-            return f"Error processing request."
+            return f"Error processing request: {e}"
 
     """
     def check_if_active(self, input: str | int) -> str:
@@ -204,7 +255,7 @@ class ActiveUserService:
             )
             print("Room Reservations:", room_reservations)
         except Exception as e:
-            print("Could not get current room reservations, please check your input!")
+            print("Issue getting room reservations:", e)
             room_reservations = []
 
         try:
@@ -212,7 +263,7 @@ class ActiveUserService:
                 user_data.root
             )
         except Exception as e:
-            print("Could not get current room reservations, please check your input!")
+            print(f"Error getting XL reservations: {e}")
             xl_reservations = []
 
         for reservation in xl_reservations:

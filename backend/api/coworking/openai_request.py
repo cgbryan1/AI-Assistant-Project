@@ -40,4 +40,4 @@ def determine_request(
     except NoSuchPathException:
         return "No current functionality matches your request."
     except:
-        return "API endpoint response!"
+        return "Students endpoint error"

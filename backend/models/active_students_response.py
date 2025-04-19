@@ -14,7 +14,7 @@ class ActiveStudentResponse(BaseModel):
     """
 
     active_users: Optional[dict[str, str]] = None
-    # message: str
+    message: str
 
 
 class ClassSearchResponse(BaseModel):
