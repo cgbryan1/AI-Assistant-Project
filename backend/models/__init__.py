@@ -21,7 +21,8 @@ from .event_registration import (
 )
 from .coworking.students import Students
 from .registration_type import RegistrationType
-from .ai_audit_log import AIAuditLogModel
+
+# from .ai_audit_log import AIAuditLogModel
 
 __authors__ = ["Kris Jordan"]
 __copyright__ = "Copyright 2023"
