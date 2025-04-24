@@ -1,53 +1,84 @@
-.title {
-    margin-block: 5px;
+/* chat.component.css */
+
+.chat-container {
+    /* Pull variables from mdc themes */
+    --chat-surface: var(--mdc-theme-surface);
+    --chat-on-surface: var(--mdc-theme-on-surface);
+    --chat-surface-high: var(--mdc-theme-surface-container-high);
+    --chat-surface-highest: var(--mdc-theme-surface-container-highest);
+    --chat-on-surface-variant: var(--mdc-theme-on-surface-variant);
+    --chat-secondary: var(--mdc-theme-secondary-container);
+    --chat-on-secondary: var(--mdc-theme-on-secondary-container);
+  }
+  
+/*Adding dark mode preferences with further specifications that general system settings*/
+@media (prefers-color-scheme: dark) {
+    /* Overridng certain settings to add contrast to text box*/
+.chat-container {
+    --chat-surface: #121212;            
+    --chat-surface-high: #333333;
+    --chat-surface-highest: #2b2b2b;
+    --chat-secondary: #444444;
+}
+}
+  
+.chat-container .title {
+margin-block: 5px;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+.chat-container .header {
+display: flex;
+justify-content: space-between;
+width: 100%;
 }
 
-.help-text {
-    padding: 10px;
-    border-radius: 10px;
-    background-color: #E8DEF9;
-    margin-top: 10px;
-    min-height: 220px;
+.chat-container .help-text {
+padding: 10px;
+border-radius: 10px;
+background-color: var(--chat-surface-highest);
+color:            var(--chat-on-surface-variant);
+margin-top: 10px;
+min-height: 220px;
 }
 
-.message-box {
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    min-height: 240px;
-    margin-top: 10px;
-    background-color: rgb(237, 237, 237);
-    /* hide scrollbar as seen in this post: https://stackoverflow.com/questions/76692101/with-cdk-virtual-scroll-viewport-can-be-hidden-the-scroll-bar */
-    scrollbar-width: none; /* Hide scrollbar on Firefox */
-    -ms-overflow-style: none; /* Hide scrollbar on IE and Edge */
-    overflow: -webkit-hidden-scrollbar; /* Hide scrollbar on Chrome, Safari, and newer versions of Edge */
+.chat-container .message-box {
+border-radius: 10px;
+display: flex;
+flex-direction: column;
+min-height: 240px;
+margin-top: 10px;
+background-color: var(--chat-surface-high);
+color:            var(--chat-on-surface);
+/* hide scrollbars */
+scrollbar-width: none;
+-ms-overflow-style: none;
+overflow: -webkit-hidden-scrollbar;
 }
 
-.user-message {
-    padding: 5px 10px;
-    margin: 5px 5px 0;
-    border-radius: 10px;
-    justify-self: flex-end;
-    background-color: #E8DEF9;
-    width: fit-content;
+.chat-container .user-message {
+padding: 5px 10px;
+margin: 5px 5px 0;
+border-radius: 10px;
+justify-self: flex-end;
+background-color: var(--chat-secondary);
+color:            var(--chat-on-secondary);
+width: fit-content;
 }
 
-.ai-message {
-    padding: 5px 10px;
-    margin: 5px 5px 0;
-    border-radius: 10px;
-    justify-self: flex-start;
-    background-color: white;
-    width: fit-content;
+.chat-container .ai-message {
+padding: 5px 10px;
+margin: 5px 5px 0;
+border-radius: 10px;
+justify-self: flex-start;
+background-color: var(--chat-surface);
+color:            var(--chat-on-surface);
+width: fit-content;
 }
 
-.text-input {
-    width: 100%;
-    padding-top: 10px;
+.chat-container .text-input {
+width: 100%;
+padding-top: 10px;
+background-color: var(--chat-surface);
+color:            var(--chat-on-surface);
 }
+  
