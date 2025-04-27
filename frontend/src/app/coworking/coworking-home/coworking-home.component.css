@@ -9,7 +9,7 @@
 #coworking {
   width: 100%;
   display: grid;
-  grid-template-columns: 60% 30%;
+  grid-template-columns: 60% 38%;
 }
 
 #main {

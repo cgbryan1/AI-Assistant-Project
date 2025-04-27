@@ -14,14 +14,25 @@
 /*Adding dark mode preferences with further specifications that general system settings*/
 @media (prefers-color-scheme: dark) {
     /* Overridng certain settings to add contrast to text box*/
-.chat-container {
-    --chat-surface: #121212;            
-    --chat-surface-high: #333333;
-    --chat-surface-highest: #2b2b2b;
-    --chat-secondary: #444444;
+    .chat-container {
+        --chat-surface: #121212;            
+        --chat-surface-high: #333333;
+        --chat-surface-highest: #2b2b2b;
+        --chat-secondary: #444444;
+    }
 }
+
+/* Light mode preferences */
+@media (prefers-color-scheme: light) {
+    .chat-container {
+      --chat-surface: #ffffff;
+      --chat-surface-high: #f3f3f3;
+      --chat-surface-highest: #ededed;
+      --chat-secondary: #e0e0e0;
+    }
 }
-  
+
+
 .chat-container .title {
 margin-block: 5px;
 }
@@ -81,4 +92,10 @@ padding-top: 10px;
 background-color: var(--chat-surface);
 color:            var(--chat-on-surface);
 }
+/* add transparency specification for background */
+@media (prefers-color-scheme: light) {
+    .chat-container .text-input {
+      background-color: transparent;
+    }
+  }
   
