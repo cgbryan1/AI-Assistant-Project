@@ -17,5 +17,4 @@ class ActiveUser(UserDetails):
     ghost_mode: bool  # true if in ghost mode, false if open to be found
     currently_active: bool  # true if checked in
 
-    # TODO figure out how to tie in reservations - probably on reservation end or thru status.py
-    # status.py in coworking checks status of the XL coworking space, including reservations, for a given user
+    # FLAG could be deleted?

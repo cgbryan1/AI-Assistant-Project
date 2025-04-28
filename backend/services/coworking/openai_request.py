@@ -25,10 +25,6 @@ class AIRequestService:
         self._active_user_svc = active_user_svc
 
     def determine_request(self, user_prompt: str):
-        # 1 context
-        # 2 user input
-        # 3 expected response
-
         context: str = (
             "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
             "The client is requesting help in carrying out a certain reservation action. "
@@ -45,16 +41,13 @@ class AIRequestService:
                 user_prompt=user_prompt,
                 response_model=GeneralAIResponse,
             )
-            # know that ai_response is populating correctly from testing
         except ValueError:
-            raise ValueError(
-                "AI request unable to choose method."
-            )  # catching and rethrowing ai error
+            raise ValueError("AI request unable to choose method.")
 
         if len(ai_response.method) > 0:
             if ai_response.method == "check_user_activity":
                 try:
-                    return self._active_user_svc.check_if_active_by_string(
+                    return self._active_user_svc.check_if_active(
                         ai_response.expected_input
                     )
                 except Exception as e:

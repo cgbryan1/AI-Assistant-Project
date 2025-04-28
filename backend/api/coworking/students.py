@@ -10,9 +10,9 @@ __authors__ = ["Emma Coye, Manasi Chaudhary, Caroline Bryan, Kathryn Brown"]
 __copyright__ = "Copyright 2025"
 __license__ = "MIT"
 
-# separate router file for B1's user story 1 (sally student checking friends)
-
 api = APIRouter(prefix="/api/coworking")
+
+# FLAG are both of these routes used?
 
 
 @api.get(
@@ -66,34 +66,3 @@ def get_active_classmates(
         raise HTTPException(
             status_code=404, detail="No active classmates could be found."
         )
-
-
-# not relevant to goal of user story so removing for now
-"""
-@api.get(
-    "/students/active",
-    summary="Get all active users in CSXL",
-    description=" TODO ",
-    responses={
-        200: {
-            "description": "Users returned!",
-        },
-        307: {
-            "description": "Redirected.",
-        },
-        404: {
-            "description": "Users not found.",
-        },
-    },
-    tags=["Coworking"],
-)
-def get_active_users() -> list[UserDetails]:  # TODO
-    try:
-        # use get_active_reservations and filter here?
-        return None  # call service here
-        # todo create fake data to test with
-
-    except:
-        raise HTTPException(status_code=404, detail="No active users could be found")
-
-"""

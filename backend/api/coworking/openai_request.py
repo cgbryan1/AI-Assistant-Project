@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from backend.services.coworking.openai_request import AIRequestService
 from backend.models.coworking.openai_request import NoSuchPathException
 
@@ -31,13 +31,10 @@ def determine_request(
     user_prompt: str, request_svc: AIRequestService = Depends()
 ) -> str:
     try:
-        # returning endpoint rn just for viewing purposes
-        # in actuality would call endpoint function
         return request_svc.determine_request(user_prompt)
-        # return "successful AI response!"
     except ValueError:
         return "AI error"
     except NoSuchPathException:
-        return "No current functionality matches your request."
+        return "The CSXL chat does not currently have any functionality that matches your request."
     except:
         return "Students endpoint error"

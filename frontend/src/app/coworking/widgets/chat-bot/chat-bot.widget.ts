@@ -1,5 +1,5 @@
 /**
- * @author Kathryn Brown
+ * @author Kathryn Brown, Caroline Bryan, Manasi Chaudhary, Emma Coye
  * @copyright 2025
  * @license MIT
  */
@@ -21,7 +21,6 @@ export class ChatBot {
   chatInput = new FormControl('');
   endpoint = `/api/ai_request/`;
 
-  /** Constructor */
   constructor(protected http: HttpClient) {}
 
   infoClicked() {
@@ -37,7 +36,6 @@ export class ChatBot {
       };
       this.messageCache.update((messages) => [...messages, newMessage]);
 
-      // backend
       const params = { user_prompt: `${newMessage.content}` };
       this.http
         .get(`${this.endpoint}`, { params, responseType: 'text' })
@@ -45,18 +43,12 @@ export class ChatBot {
           console.log(result);
           const aiMessage = {
             type: MessageType.AIMessage,
-            content: result.slice(1, result.length - 1) // removing quotes from message
+            content: result.slice(1, result.length - 1)
           };
           this.messageCache.update((messages) => [...messages, aiMessage]);
         });
 
-      /* const aiMessage = {     <- dummy meassage
-        type: MessageType.AIMessage,
-        content: 'Helpful insight.'
-      };
-      this.messageCache.update((messages) => [...messages, aiMessage]); */
-
-      this.chatInput.setValue(''); // resets to empty input
+      this.chatInput.setValue('');
     }
   }
 }

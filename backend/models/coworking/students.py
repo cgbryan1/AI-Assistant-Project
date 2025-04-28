@@ -23,3 +23,6 @@ class Students(BaseModel):
     last_checked_in: datetime = datetime.now(timezone.utc)
     # Reservation information -- TODO
     reservations: list[Reservation] = []
+
+
+# FLAG could this be deleted?
