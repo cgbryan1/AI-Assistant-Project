@@ -24,7 +24,7 @@ from ...models.coworking import (
     RoomState,
     AvailabilityList,
     OperatingHours,
-    ReservationIdentity
+    ReservationIdentity,
 )
 from ...entities import UserEntity
 from ...entities.coworking import ReservationEntity, SeatEntity
@@ -560,12 +560,13 @@ class ReservationService:
         )
 
         return [reservation.to_model() for reservation in reservations]
-    
+
     def _query_xl_room_reservations_by_date_for_user(
         self, date: datetime, subject: User
     ) -> Sequence[Reservation]:
         """Duplicate of _query_xl_reservations_by_date_for_user() but with room != None to fetch all of a user's room reservations on a given date.
-        Need a separate method so as to not disturb current functionality based on the original method."""
+        Need a separate method so as to not disturb current functionality based on the original method.
+        """
         start = date.replace(hour=0, minute=0, second=0, microsecond=0)
         reservations = (
             self._session.query(ReservationEntity)
@@ -992,12 +993,16 @@ class ReservationService:
             self._session.commit()
 
         return entity.to_model()
-    
+
     def determine_reservation_to_cancel(self, reservation_date: datetime) -> str:
 
-        user_reservations = self._query_xl_reservations_by_date_for_user(date=reservation_date, subject=self._subject)
+        user_reservations = self._query_xl_reservations_by_date_for_user(
+            date=reservation_date, subject=self._subject
+        )
         # returns list of a user's SEAT reservations on a given day
-        user_reservations += self._query_xl_room_reservations_by_date_for_user(date=reservation_date, subject=self._subject)
+        user_reservations += self._query_xl_room_reservations_by_date_for_user(
+            date=reservation_date, subject=self._subject
+        )
         # returns list of a user's ROOM reservations on a given day
 
         if len(user_reservations) == 0:
@@ -1006,19 +1011,26 @@ class ReservationService:
             if reservation_date.strftime("%H:%M:%S") == "00:00:00":
                 return "Please provide the day and time of the reservation you want to cancel."
             else:
-                target = self.determining_ai_helper(reservation_time=reservation_date, reservations=user_reservations)
+                target = self.determining_ai_helper(
+                    reservation_time=reservation_date, reservations=user_reservations
+                )
                 if target is None:
                     return "You don't have a reservation at that time!"
             # return "You have more than one reservation on that day! Cannot handle your request at this time."
         else:
             target: Reservation = user_reservations[0]
 
-        if self.change_reservation(self._subject, ReservationPartial(id=target.id, state=ReservationState.CANCELLED)):
+        if self.change_reservation(
+            self._subject,
+            ReservationPartial(id=target.id, state=ReservationState.CANCELLED),
+        ):
             return "Reservation cancelled!"
         else:
             return "Unable to cancel your reservation."
-        
-    def determining_ai_helper(self, reservation_time: datetime, reservations: Sequence[Reservation]) -> Reservation | None :
+
+    def determining_ai_helper(
+        self, reservation_time: datetime, reservations: Sequence[Reservation]
+    ) -> Reservation | None:
 
         context: str = (
             "You are an assistant that interprets user input - you must determine which reservation a user is referring to based on the time they provide. "
@@ -1033,20 +1045,26 @@ class ReservationService:
             if res:
                 res_times[res.id] = res.start.strftime("%H:%M:%S")
 
-        conditional: str = f"User's search time: {reservation_time.strftime("%H:%M:%S")} and Reservation times: {res_times}. "
+        conditional: str = (
+            f"User's search time: {reservation_time.strftime('%H:%M:%S')} and Reservation times: {res_times}. "
+        )
 
         try:
-            response: IntAIResponse = self._openai_svc.prompt(system_prompt=context, user_prompt=conditional, response_model=IntAIResponse)
+            response: IntAIResponse = self._openai_svc.prompt(
+                system_prompt=context,
+                user_prompt=conditional,
+                response_model=IntAIResponse,
+            )
         except ValueError as e:
             raise ValueError(
                 f"AI request unable to choose reservation: {e}."
             )  # catching and rethrowing ai error
-        
+
         if not response or response is None:
             return None
         else:
             for res in reservations:
-                if res: 
+                if res:
                     if res.id == response.id:
                         return res
 
