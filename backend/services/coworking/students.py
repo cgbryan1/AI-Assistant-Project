@@ -43,7 +43,7 @@ class ActiveUserService:
 
     def check_if_active(self, name: str) -> str:
         context: str = (
-            "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. "
+            "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. Be friendly and use proper punctuation and capitalization. "
             "The client is requesting a user by name - we need to know if this user is active in the coworking space, and if the user is active, what room they are in. "
             "You will recieve a dictionary with Users as keys and their reservations as values."
             "Compare the input against the dictionary. If you're able to match the client's input with an active user, send back an active users dictionary with the key being the User object and the corresponding reservation, as well as a string message confirming or denying if the user is in the XL and where they are based on their reservation. "
@@ -84,7 +84,7 @@ class ActiveUserService:
                 current_classes.append(desired_course)
 
         context: str = (
-            "You are an assistant that interprets user input to enable other functions, chosen for the ability to look past potential typos. "
+            "You are an assistant that interprets user input to enable other functions, chosen for the ability to look past potential typos."
             "The student is sharing a course that they may or may not be a member of. "
             "Compare their input against the courses that they are registered for. Send back a list of strings. "
             "If the user inputs NO course then return this list empty. "

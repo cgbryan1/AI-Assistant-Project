@@ -24,6 +24,7 @@ from ...models.coworking import (
     RoomState,
     AvailabilityList,
     OperatingHours,
+    ReservationIdentity
 )
 from ...entities import UserEntity
 from ...entities.coworking import ReservationEntity, SeatEntity
@@ -31,6 +32,11 @@ from .seat import SeatService
 from .policy import PolicyService
 from .operating_hours import OperatingHoursService
 from ..permission import PermissionService
+from backend.api.authentication import registered_user
+from ...models import User
+from backend.services.openai import OpenAIService
+from typing import Annotated
+from backend.models.coworking.openai_request import IntAIResponse
 
 __authors__ = ["Kris Jordan", "Matt Vu", "Yuvraj Jain"]
 __copyright__ = "Copyright 2023-24"
@@ -47,11 +53,13 @@ class ReservationService:
 
     def __init__(
         self,
+        openai_svc: Annotated[OpenAIService, Depends()],
         session: Session = Depends(db_session),
         permission_svc: PermissionService = Depends(),
         policy_svc: PolicyService = Depends(),
         operating_hours_svc: OperatingHoursService = Depends(),
         seats_svc: SeatService = Depends(),
+        user: User = Depends(registered_user),
     ):
         """Initializes a new ReservationService.
 
@@ -63,6 +71,8 @@ class ReservationService:
         self._policy_svc = policy_svc
         self._operating_hours_svc = operating_hours_svc
         self._seat_svc = seats_svc
+        self._subject = user
+        self._openai_svc = openai_svc
 
     def get_reservation(self, subject: User, id: int) -> Reservation:
         """Lookup a reservation by ID.
@@ -550,6 +560,30 @@ class ReservationService:
         )
 
         return [reservation.to_model() for reservation in reservations]
+    
+    def _query_xl_room_reservations_by_date_for_user(
+        self, date: datetime, subject: User
+    ) -> Sequence[Reservation]:
+        """Duplicate of _query_xl_reservations_by_date_for_user() but with room != None to fetch all of a user's room reservations on a given date.
+        Need a separate method so as to not disturb current functionality based on the original method."""
+        start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        reservations = (
+            self._session.query(ReservationEntity)
+            .join(ReservationEntity.users)
+            .filter(
+                ReservationEntity.start < start + timedelta(hours=24),
+                ReservationEntity.end > start,
+                ReservationEntity.state.not_in(
+                    [ReservationState.CANCELLED, ReservationState.CHECKED_OUT]
+                ),
+                ReservationEntity.room != None,
+                UserEntity.id == subject.id,
+            )
+            .order_by(ReservationEntity.start)
+            .all()
+        )
+
+        return [reservation.to_model() for reservation in reservations]
 
     def _get_reservable_rooms(self) -> Sequence[RoomDetails]:
         """
@@ -958,6 +992,63 @@ class ReservationService:
             self._session.commit()
 
         return entity.to_model()
+    
+    def determine_reservation_to_cancel(self, reservation_date: datetime) -> str:
+
+        user_reservations = self._query_xl_reservations_by_date_for_user(date=reservation_date, subject=self._subject)
+        # returns list of a user's SEAT reservations on a given day
+        user_reservations += self._query_xl_room_reservations_by_date_for_user(date=reservation_date, subject=self._subject)
+        # returns list of a user's ROOM reservations on a given day
+
+        if len(user_reservations) == 0:
+            return "You have no reservations on that day."
+        elif len(user_reservations) > 1:
+            if reservation_date.strftime("%H:%M:%S") == "00:00:00":
+                return "Please provide the day and time of the reservation you want to cancel."
+            else:
+                target = self.determining_ai_helper(reservation_time=reservation_date, reservations=user_reservations)
+                if target is None:
+                    return "You don't have a reservation at that time!"
+            # return "You have more than one reservation on that day! Cannot handle your request at this time."
+        else:
+            target: Reservation = user_reservations[0]
+
+        if self.change_reservation(self._subject, ReservationPartial(id=target.id, state=ReservationState.CANCELLED)):
+            return "Reservation cancelled!"
+        else:
+            return "Unable to cancel your reservation."
+        
+    def determining_ai_helper(self, reservation_time: datetime, reservations: Sequence[Reservation]) -> Reservation | None :
+
+        context: str = (
+            "You are an assistant that interprets user input - you must determine which reservation a user is referring to based on the time they provide. "
+            "You will receive the time of the reservation the user is looking for in the format '%H:%M:%S' and a dictionary of the id's and start times of each of the user's reservations in the format {id: '%H:%M:%S'}. "
+            "If the user's requested search time matches a reservation time, return the id of the reservation with the matching time. "
+            "If no reservation time matches the time the user is requesting return an empty model. "
+        )
+
+        res_times: dict[int, str] = {}
+
+        for res in reservations:
+            if res:
+                res_times[res.id] = res.start.strftime("%H:%M:%S")
+
+        conditional: str = f"User's search time: {reservation_time.strftime("%H:%M:%S")} and Reservation times: {res_times}. "
+
+        try:
+            response: IntAIResponse = self._openai_svc.prompt(system_prompt=context, user_prompt=conditional, response_model=IntAIResponse)
+        except ValueError as e:
+            raise ValueError(
+                f"AI request unable to choose reservation: {e}."
+            )  # catching and rethrowing ai error
+        
+        if not response or response is None:
+            return None
+        else:
+            for res in reservations:
+                if res: 
+                    if res.id == response.id:
+                        return res
 
     def _change_state(self, entity: ReservationEntity, delta: ReservationState) -> bool:
         RS = ReservationState

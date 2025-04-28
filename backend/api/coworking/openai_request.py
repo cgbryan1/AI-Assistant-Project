@@ -32,9 +32,11 @@ def determine_request(
 ) -> str:
     try:
         return request_svc.determine_request(user_prompt)
-    except ValueError:
-        return "AI error"
+        # return "successful AI response!"
+    except ValueError as ve:
+        return f"AI error: {ve}"
     except NoSuchPathException:
         return "The CSXL chat does not currently have any functionality that matches your request."
-    except:
-        return "Students endpoint error"
+    except Exception as e:
+        print(e)
+        return f"Error: {e}"
