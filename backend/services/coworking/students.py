@@ -190,3 +190,7 @@ class ActiveUserService:
                     active_users[str(user)] = str(room_id)
 
         return active_users
+
+    def user_exists(self, name: str) -> bool:
+        "Helper method for checking if a user exists in the CSXL database"
+        return self._user.user_exists_by_name(name)

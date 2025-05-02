@@ -44,6 +44,12 @@ class AIRequestService:
 
     def determine_request(self, user_prompt: str):
 
+        if re.search(r"\b(?:hi|hello|hey)\b", user_prompt, re.IGNORECASE):
+            return "Hi! What can I help you with"
+
+        if re.search(r"\b(?:who|anyone)\b", user_prompt, re.IGNORECASE):
+            return "I'll need to know a little more information. Who would you like me to check for in the XL?"
+
         if re.search(r"\bclass(es)?\b", user_prompt, re.IGNORECASE) or re.search(
             r"\b[A-Za-z]{2,4}\s*\d{2,4}\b", user_prompt  # Found online
         ):
@@ -97,6 +103,13 @@ class AIRequestService:
         if len(ai_response.method) > 0:
             if ai_response.method == "check_user_activity":
                 try:
+                    # Check if user exists in database
+                    if not self._active_user_svc.user_exists(
+                        ai_response.expected_input
+                    ):
+                        return f"'{ai_response.expected_input}' does not appear to be a valid user in our system. Please check the name and try again."
+
+                    # Otherwise check if active
                     return self._active_user_svc.check_if_active(
                         ai_response.expected_input
                     )

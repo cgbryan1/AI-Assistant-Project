@@ -230,3 +230,25 @@ class UserService:
         entity.update(user)
         self._session.commit()
         return entity.to_model()
+
+    def user_exists_by_name(self, name: str) -> bool:
+        """Helper method for checking if a user exists in the CSXL system."""
+        normalized_input = name.strip().lower()
+
+        statement = select(UserEntity)
+        users = self._session.execute(statement).scalars().all()
+
+        # Adding checks for first, last, full name to avoid strict checking
+        for user in users:
+            full_name = f"{user.first_name} {user.last_name}".strip().lower()
+            first_name = user.first_name.lower()
+            last_name = user.last_name.lower()
+
+            if (
+                normalized_input == full_name
+                or normalized_input == first_name
+                or normalized_input == last_name
+                or normalized_input in full_name
+            ):
+                return True
+        return False
