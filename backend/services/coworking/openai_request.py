@@ -1,3 +1,4 @@
+# Request Service
 from backend.services.openai import OpenAIService
 from backend.models.coworking.openai_request import (
     GeneralAIResponse,
@@ -51,9 +52,9 @@ class AIRequestService:
             "Be conscious of potential typos/misspellings and please try to only return one endpoint. "
             "If there is no method match, and the user is not just making conversation, return an empty string. "
             "The service methods are {'check_user_activity': 'Checking whether a specified user is active and visible in the XL. Finding user by name. Expecting an input name as a string.', 'cancel_reservation': 'Cancels the specified reservation. You could receive the date of the reservation to cancel in a variety of date formats, including 'today', 'tomorrow', or a day of the week, potentially along with a reservation time. If there is no date stated, and only a time, assume the day is today. Please be aware of the current date, how it relates to weekdays, and translate the user's input date and time so that it is formatted as a string with the format '%Y-%m-%d %H:%M:%S'; if there is not enough information please return 'Not enough reservation info' as the method.'}. "
-            )
+        )
 
-        # not yet implemented methods: 'get_active_classmates': 'Get active users in a specified course. Expecting a course department and number.', 'draft_reservation': 'When a user begins the process of making a reservation, a draft holds its place until confirmed. Expecting a ReservationRequest; if there is not enough information please return 'Not enough reservation info' as the method.', 
+        # not yet implemented methods: 'get_active_classmates': 'Get active users in a specified course. Expecting a course department and number.', 'draft_reservation': 'When a user begins the process of making a reservation, a draft holds its place until confirmed. Expecting a ReservationRequest; if there is not enough information please return 'Not enough reservation info' as the method.',
 
         weekday_num: int = date.today().weekday()
         if weekday_num == 0:

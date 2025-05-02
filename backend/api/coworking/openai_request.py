@@ -1,3 +1,4 @@
+# API request
 from fastapi import APIRouter, Depends
 from backend.services.coworking.openai_request import AIRequestService
 from backend.models.coworking.openai_request import NoSuchPathException

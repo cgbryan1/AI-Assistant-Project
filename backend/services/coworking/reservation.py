@@ -1,4 +1,4 @@
-"""Service that manages reservations in the coworking space."""
+"""Service that manages reservations in the XL coworking space."""
 
 from fastapi import Depends
 from datetime import datetime, timedelta
@@ -1080,6 +1080,8 @@ class ReservationService:
             case (RS.DRAFT, RS.CANCELLED):
                 valid_transition = True
             case (RS.CONFIRMED, RS.CANCELLED):
+                valid_transition = True
+            case (RS.CHECKED_IN, RS.CANCELLED):
                 valid_transition = True
             case (RS.CHECKED_IN, RS.CHECKED_OUT):
                 valid_transition = True
