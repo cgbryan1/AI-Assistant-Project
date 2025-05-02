@@ -16,6 +16,7 @@ from backend.services.coworking.reservation import ReservationService
 from backend.api.authentication import registered_user
 from datetime import datetime, date
 from ...models import User
+import re
 
 __authors__ = ["Emma Coye", "Manasi Chaudhary", "Caroline Bryan", "Kathryn Brown"]
 __copyright__ = "Copyright 2025"
@@ -42,6 +43,12 @@ class AIRequestService:
         """Service method that uses AI and a user prompt to determine what action to take."""
 
     def determine_request(self, user_prompt: str):
+
+        if re.search(r"\bclass(es)?\b", user_prompt, re.IGNORECASE) or re.search(
+            r"\b[A-Za-z]{2,4}\s*\d{2,4}\b", user_prompt  # Found online
+        ):
+            return "The CSXL chat does not currently have any functionality that matches your request. Stay tuned for when you can!"
+
         context: str = (
             "You are an assistant that interprets user input - be aware that there may be typos in user input and be logical about matches. Be friendly and use proper punctuation and capitalization. "
             "If the user is being conversational, for example saying hi or hello, return an appropriate response as the method. "
@@ -97,12 +104,30 @@ class AIRequestService:
                     return f"Request couldn't be completed, please reattempt with more details. Error: {e}."
             elif ai_response.method == "cancel_reservation":
                 # ai formatting date correctly, datetime converting to string correctly
-                return self._reservation_svc.determine_reservation_to_cancel(
-                    reservation_date=datetime.strptime(
+                # return self._reservation_svc.determine_reservation_to_cancel(
+                #     reservation_date=datetime.strptime(
+                #         ai_response.expected_input, "%Y-%m-%d %H:%M:%S"
+                #     )
+                # )
+                try:
+                    reservation_date = datetime.strptime(
                         ai_response.expected_input, "%Y-%m-%d %H:%M:%S"
                     )
+                except Exception:
+                    upcoming = self._reservation_svc.get_current_reservations_for_user(
+                        self._subject, self._subject
+                    )
+                    if len(upcoming) == 1:
+                        return self._reservation_svc.determine_reservation_to_cancel(
+                            reservation_date=upcoming[0].start
+                        )
+                    return "You have multiple reservations. Please give more information about your reservation so we don't cancel the wrong one!"
+
+                return self._reservation_svc.determine_reservation_to_cancel(
+                    reservation_date=reservation_date
                 )
             # elif ai_response.method == "get_active_classmates":
+            #     return "We can't handle this request at this time. Stay tuned for when you can!"
             #    try:
             #        return self._active_user_svc.get_active_classmates(
             #            ai_response.expected_input

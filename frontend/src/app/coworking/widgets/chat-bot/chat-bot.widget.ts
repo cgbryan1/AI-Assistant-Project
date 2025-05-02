@@ -4,10 +4,11 @@
  * @license MIT
  */
 
-import { Component, WritableSignal, signal } from '@angular/core';
+import { Component, WritableSignal, signal, ViewChild } from '@angular/core';
 import { MessageType, Message } from '../../coworking.models';
 import { FormControl } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'chat-bot',
@@ -15,6 +16,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./chat-bot.widget.css']
 })
 export class ChatBot {
+  @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
   messageCache: WritableSignal<Message[]> = signal([]);
   infoShow: WritableSignal<Boolean> = signal(false);
 
@@ -22,6 +24,15 @@ export class ChatBot {
   endpoint = `/api/ai_request/`;
 
   constructor(protected http: HttpClient) {}
+
+  private autoscrollToBottom() {
+    setTimeout(() => {
+      const lastIndex = this.messageCache().length - 1;
+      if (lastIndex >= 0) {
+        this.viewport.scrollToIndex(lastIndex, 'smooth');
+      }
+    });
+  }
 
   infoClicked() {
     this.infoShow.set(!this.infoShow());
@@ -35,6 +46,7 @@ export class ChatBot {
         content: this.chatInput.value
       };
       this.messageCache.update((messages) => [...messages, newMessage]);
+      this.autoscrollToBottom();
 
       const params = { user_prompt: `${newMessage.content}` };
       this.http
@@ -46,6 +58,7 @@ export class ChatBot {
             content: result.slice(1, result.length - 1)
           };
           this.messageCache.update((messages) => [...messages, aiMessage]);
+          this.autoscrollToBottom();
         });
 
       this.chatInput.setValue('');

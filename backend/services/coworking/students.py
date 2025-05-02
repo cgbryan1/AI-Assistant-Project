@@ -64,7 +64,7 @@ class ActiveUserService:
             )
             # result is empty or active_users is None - use this message
             if response.active_users is None or not response.active_users:
-                return f"{name} is not in the XL right now."
+                return f"{name.title()} is not in the XL right now."
             return response.message
         except ValueError as ve:
             return str(ve)

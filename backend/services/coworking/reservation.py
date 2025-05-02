@@ -1006,7 +1006,12 @@ class ReservationService:
         # returns list of a user's ROOM reservations on a given day
 
         if len(user_reservations) == 0:
-            return "You have no reservations on that day."
+            # return "You have no reservations on that day."
+            day_name = reservation_date.strftime("%A")
+            month_day = (
+                reservation_date.strftime("%B %d").lstrip("0").replace(" 0", " ")
+            )  # Found strftime, lstrip online
+            return f"You have no reservations for {day_name} ({month_day})."
         elif len(user_reservations) > 1:
             if reservation_date.strftime("%H:%M:%S") == "00:00:00":
                 return "Please provide the day and time of the reservation you want to cancel."
