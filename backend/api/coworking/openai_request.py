@@ -40,4 +40,4 @@ def determine_request(
         return "The CSXL chat does not currently have any functionality that matches your request. Stay tuned for when you can!"
     except Exception as e:
         print(e)
-        return f"Error: {e}"
+        return "Error"

@@ -12,8 +12,6 @@ __license__ = "MIT"
 
 api = APIRouter(prefix="/api/coworking")
 
-# FLAG are both of these routes used?
-
 
 @api.get(
     "/students/{field}",
@@ -37,32 +35,3 @@ def check_user_activity(field: str | int) -> bool:
         return ActiveUserService.check_if_active(field)
     except:
         raise HTTPException(status_code=404, detail="No active user could be found.")
-
-
-# Route based on course
-@api.get(
-    "/student?course={course_input}",
-    summary="Get active users in a specified course.",
-    description=" TODO ",
-    responses={
-        200: {
-            "description": "Classmates returned!",
-        },
-        307: {
-            "description": "Redirected.",
-        },
-        404: {
-            "description": "Classmates not found.",
-        },
-    },
-    tags=["Coworking"],
-)
-def get_active_classmates(
-    course_input: str,
-) -> list[UserDetails]:
-    try:
-        return ActiveUserService.get_active_classmates(course_input)
-    except:
-        raise HTTPException(
-            status_code=404, detail="No active classmates could be found."
-        )

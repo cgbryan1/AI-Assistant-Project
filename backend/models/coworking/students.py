@@ -17,8 +17,6 @@ class Students(BaseModel):
 
     # Present/not
     is_present: bool = False
-    # Ghost mode (TODO -- see if we actually need it)
-    is_ghost_mode: bool = False
     # Timestamp (TODO not sure if there's eastern version of UTC)
     last_checked_in: datetime = datetime.now(timezone.utc)
     # Reservation information -- TODO
