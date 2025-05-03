@@ -42,8 +42,6 @@ class AIRequestService:
     def determine_request(self, user_prompt: str) -> str:
         """Service method that uses AI and a user prompt to determine what action to take."""
 
-    def determine_request(self, user_prompt: str):
-
         if re.search(r"\b(?:hi|hello|hey)\b", user_prompt, re.IGNORECASE):
             return "Hi! What can I help you with"
 

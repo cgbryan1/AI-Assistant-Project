@@ -1006,7 +1006,6 @@ class ReservationService:
         # returns list of a user's ROOM reservations on a given day
 
         if len(user_reservations) == 0:
-            # return "You have no reservations on that day."
             day_name = reservation_date.strftime("%A")
             month_day = (
                 reservation_date.strftime("%B %d").lstrip("0").replace(" 0", " ")
@@ -1014,14 +1013,13 @@ class ReservationService:
             return f"You have no reservations for {day_name} ({month_day})."
         elif len(user_reservations) > 1:
             if reservation_date.strftime("%H:%M:%S") == "00:00:00":
-                return "Please provide the day and time of the reservation you want to cancel."
+                return "You have multiple reservations on that day. Please give more information about your reservation so we don't cancel the wrong one!"
             else:
                 target = self.determining_ai_helper(
                     reservation_time=reservation_date, reservations=user_reservations
                 )
                 if target is None:
                     return "You don't have a reservation at that time!"
-            # return "You have more than one reservation on that day! Cannot handle your request at this time."
         else:
             target: Reservation = user_reservations[0]
 
