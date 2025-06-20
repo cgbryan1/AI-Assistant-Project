@@ -91,3 +91,8 @@ This feature relies on existing CSXL database functionality to cancel reservatio
 
 ## Libraries / Tools Used
 Microsoft Azure OpenAI API, FastAPI, Python, Pydantic, Angular, Angular Material, Typescript, HTML, CSS
+
+## Development History
+This repository was originally a private fork; transferring it to a public repo removed the editing history. Screenshots are below to see our workflow - we followed Google's code review guidelines and maintained a detailed project board.
+
+
