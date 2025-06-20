@@ -2,8 +2,10 @@
 
 Developed by [Caroline Bryan](https://github.com/cgbryan1), [Katie Brown](https://github.com/kgbrown5), [Emma Coye](https://github.com/emmacoye), & [Manasi Chaudhary](https://github.com/mchaudh-21) for Kris Jordan's COMP 590 at UNC Chapel Hill. 
 
-See [final_project_documentation](docs/final_project_documentation.md) in `docs` for project details.
 
+## Project Feature Docs
+
+See [final_project_documentation](docs/final_project_documentation.md) in `docs` for project details.
 
 ## About the Computer Science Experience Labs
 
