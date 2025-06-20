@@ -8,6 +8,8 @@ Currently, there is no way to find classmates or peers in the CSXL, and all rese
 
 A virtual assistant would allow users to conversationally query real-time usage information and cancel reservations in natural language. Our feature empowers CSXL users to manage their reservations with ease and facilitates coworking by allowing users to check the status of friends in the CSXL.
 
+Check out our demo video [here](https://www.youtube.com/watch?v=qO9f3UQ5JDY)!
+
 
 
 ## Adding the Chatbot
