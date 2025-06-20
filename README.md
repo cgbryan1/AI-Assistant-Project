@@ -9,10 +9,10 @@ See [final_project_documentation](docs/final_project_documentation.md) in `docs`
 
 The Experience Labs' (XL) mission is to accelerate technical experience and build community among undergraduate CS majors at The University of North Carolina at Chapel Hill. The XL's web app, found in production at `csxl.unc.edu`, is backed by the same code found in this repository. Our team built on this existing codebase to implement an AI assistant feature.
 
-* [Get Started with a Development Environment](docs/get_started.md)
 
 ## Developer Docs
 
+* [Get Started with a Development Environment](docs/get_started.md)
 * [Branch, Pull Request, and Code Review Practices](docs/branches.md)
 * [Database Concerns](docs/database.md)
 * [Authentication, Authorization, and Permissions](docs/auth.md)
