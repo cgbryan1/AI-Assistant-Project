@@ -8,6 +8,8 @@ Developed by [Caroline Bryan](https://github.com/cgbryan1), [Katie Brown](https:
 
 See [final_project_documentation](docs/final_project_documentation.md) in `docs` for details on implementation, tools, and visuals.
 
+Check out our demo video [here](https://www.youtube.com/watch?v=qO9f3UQ5JDY)!
+
 
 
 ## About the Computer Science Experience Labs
