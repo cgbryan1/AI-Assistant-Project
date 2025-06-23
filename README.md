@@ -18,7 +18,7 @@ The Experience Labs' (XL) mission is to accelerate technical experience and buil
 
 
 
-## Developer Docs
+### Developer Docs
 
 * [Get Started with a Development Environment](docs/get_started.md)
 * [Branch, Pull Request, and Code Review Practices](docs/branches.md)
@@ -27,6 +27,6 @@ The Experience Labs' (XL) mission is to accelerate technical experience and buil
 * [Testing Tools](docs/testing.md)
 * [Debugging Tools](docs/debugging.md)
 
-## Feature Docs
+### Feature Docs
 
 * [Github Integration](docs/github_integration.md)
