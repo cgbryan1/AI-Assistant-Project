@@ -92,11 +92,15 @@ This feature relies on existing CSXL database functionality to cancel reservatio
 
 
 ## Libraries / Tools Used
+
 Microsoft Azure OpenAI API, FastAPI, Python, Pydantic, Angular, Angular Material, Typescript, HTML, CSS
 
-## Development History
+## Project Management
+
+We used Figma to create interactive wireframes for our feature before developing and Github project boards to keep track of tickets' status. We followed Google’s code review guidelines as well as their limit on AI contributions to code (we estimate under 10% of our project includes AI generated code).
+
 This repository was originally a private fork. Transferring it to a public repo removed its contribution and editing history.
-Screenshots below illustrate our workflow — we followed Google’s code review guidelines and maintained a detailed project board throughout development.
+Screenshots below illustrate our workflow.
 
 ![Version workflow](images/edit-history.png)
 
